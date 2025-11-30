@@ -1,0 +1,20 @@
+# VS Code
+.vscode/*
+!.vscode/c_cpp_properties.json
+
+# macOS junk
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+*.icloud
+
+# SQLite temp files
+*.db-journal
+*.db-shm
+*.db-wal
+
+db/
+build/
+bin/

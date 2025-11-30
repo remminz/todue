@@ -1,0 +1,13 @@
+{
+    "configurations": [
+        {
+            "name": "todue",
+            "includePath": [
+                "${workspaceFolder}",
+                "${workspaceFolder}/include"
+            ],
+            "cStandard": "c11"
+        }
+    ],
+    "version": 4
+}
