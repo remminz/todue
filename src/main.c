@@ -2,6 +2,7 @@
 #include <sqlite3.h>
 
 #include "db.h"
+#include "util.h"
 
 int main(void) {
     sqlite3 *db;
