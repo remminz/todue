@@ -8,6 +8,7 @@ SRC_DIR := src
 OBJ_DIR := build
 BIN_DIR := bin
 DB_DIR  := db
+LOG_DIR := log
 
 TARGET := $(BIN_DIR)/todue
 
@@ -18,7 +19,7 @@ DEPS := $(OBJS:.o=.d)
 all: debug
 
 dirs:
-	@mkdir -p $(OBJ_DIR) $(BIN_DIR) $(DB_DIR)
+	@mkdir -p $(OBJ_DIR) $(BIN_DIR) $(DB_DIR) $(LOG_DIR)
 
 debug: CFLAGS += $(DEBUG_FLAGS)
 debug: dirs $(TARGET)
@@ -47,6 +48,6 @@ clean:
 	rm -rf $(OBJ_DIR)/* $(BIN_DIR)/*
 
 reset:
-	rm -rf $(OBJ_DIR) $(DB_DIR) $(BIN_DIR)
+	rm -rf $(OBJ_DIR) $(DB_DIR) $(BIN_DIR) $(LOG_DIR)
 
 .PHONY: all dirs debug release run clean reset

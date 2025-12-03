@@ -2,13 +2,15 @@
 
 #include <stdio.h>
 
+#include "log.h"
+
 int db_open(sqlite3 **db, const char *path) {
     int rc = sqlite3_open(path, db);
     if (rc != SQLITE_OK) {
-        fprintf(stderr, "Failed to open database: %s\n", sqlite3_errmsg(*db));
+        LOG_ERROR("Failed to open database: %s", sqlite3_errmsg(*db));
         return -1;
     } else {
-        fputs("Successfully opened database\n", stderr);
+        LOG_INFO("Successfully opened database");
         return 0;
     }
 }
@@ -16,10 +18,10 @@ int db_open(sqlite3 **db, const char *path) {
 int db_close(sqlite3 *db) {
     int rc = sqlite3_close(db);
     if (rc != SQLITE_OK) {
-        fprintf(stderr, "Failed to close database: %s\n", sqlite3_errmsg(db));
+        LOG_ERROR("Failed to close database: %s", sqlite3_errmsg(db));
         return -1;
     } else {
-        fputs("Successfully closed database\n", stderr);
+        LOG_INFO("Successfully closed database");
         return 0;
     }
 }
@@ -40,10 +42,10 @@ int db_init(sqlite3 *db) {
 
     int rc = sqlite3_exec(db, sql, NULL, NULL, NULL);
     if (rc != SQLITE_OK) {
-        fprintf(stderr, "Failed to initialize schema: %s\n", sqlite3_errmsg(db));
+        LOG_ERROR("Failed to initialize schema: %s", sqlite3_errmsg(db));
         return -1;
     } else {
-        fputs("Successfully initialized schema\n", stderr);
+        LOG_INFO("Successfully initialized schema");
         return 0;
     }
 }
@@ -61,6 +63,7 @@ int db_add_todo(sqlite3 *db, const char *brief) {
     int rc = sqlite3_step(stmt);
     if (rc != SQLITE_DONE) {
         sqlite3_finalize(stmt);
+        LOG_ERROR("Failed to add todo item: %s", sqlite3_errmsg(db));
         return -1;
     }
     sqlite3_finalize(stmt);
@@ -80,6 +83,7 @@ int db_mark_done(sqlite3 *db, int id) {
     int rc = sqlite3_step(stmt);
     if (rc != SQLITE_DONE) {
         sqlite3_finalize(stmt);
+        LOG_ERROR("Failed to mark done: %s", sqlite3_errmsg(db));
         return -1;
     }
     sqlite3_finalize(stmt);
@@ -99,6 +103,7 @@ int db_delete_todo(sqlite3 *db, int id) {
     int rc = sqlite3_step(stmt);
     if (rc != SQLITE_DONE) {
         sqlite3_finalize(stmt);
+        LOG_ERROR("Failed to delete todo item: %s", sqlite3_errmsg(db));
         return -1;
     }
     sqlite3_finalize(stmt);
@@ -126,6 +131,7 @@ int db_list(sqlite3 *db, todo_callback callback, void *user_data) {
     }
     if (rc != SQLITE_DONE) {
         sqlite3_finalize(stmt);
+        LOG_ERROR("Failed to list database: %s", sqlite3_errmsg(db));
         return -1;
     }
     sqlite3_finalize(stmt);
