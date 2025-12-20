@@ -12,5 +12,6 @@ void print_row(int id,
                void *user_data);
 const char *substr(const char *source, size_t offset, size_t size);
 void skip_spaces(char **str);
+char *xstrdup(const char *str);
 
 #endif // UTIL_H

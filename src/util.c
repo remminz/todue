@@ -48,3 +48,16 @@ void skip_spaces(char **str) {
         ++(*str);
     }
 }
+
+char *xstrdup(const char *str) {
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
+    return strdup(s);
+#else
+    size_t len = strlen(str) + 1;
+    char *p = malloc(len);
+    if (p) {
+        memcpy(p, str, len);
+    }
+    return p;
+#endif
+}
