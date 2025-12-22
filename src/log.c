@@ -3,6 +3,8 @@
 #include <stdarg.h>
 #include <time.h>
 
+#include "util.h"
+
 static LogLevel current_level = LOG_INFO;
 static FILE *log_fp = NULL;
 
@@ -48,7 +50,7 @@ void log_msg(
     
     time_t now = time(NULL);
     struct tm timestamp;
-    localtime_r(&now, &timestamp);
+    localtime_safe(&now, &timestamp);
 
     if (log_fp == NULL) {
         log_fp = fopen("log/debug.log", "a");

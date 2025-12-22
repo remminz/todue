@@ -57,7 +57,7 @@ int is_valid_datetime(const char *s) {
 char *current_iso_datetime(char *buf, size_t size) {
     time_t now = time(NULL);
     struct tm local_tm;
-    localtime_r(&now, &local_tm);
+    localtime_safe(&now, &local_tm);
     strftime(buf, size, "%Y-%m-%d %H:%M:%S", &local_tm);
     return buf;
 }
@@ -71,11 +71,11 @@ char *relative_iso_datetime(char *buf, size_t size, char *relative) {
     struct tm local_tm;
 
     if (strcmp("today", relative) == 0 || strcmp("tonight", relative) == 0) {
-        localtime_r(&now, &local_tm);
+        localtime_safe(&now, &local_tm);
         strftime(buf, size, "%Y-%m-%d 11:59:59", &local_tm);
     } else if (strcmp("tomorrow", relative) == 0) {
         now += 24 * 60 * 60;
-        localtime_r(&now, &local_tm);
+        localtime_safe(&now, &local_tm);
         strftime(buf, size, "%Y-%m-%d 11:59:59", &local_tm);
     } else {
         char *token;
@@ -106,32 +106,32 @@ char *relative_iso_datetime(char *buf, size_t size, char *relative) {
             switch(c1) {
                 case 's':
                     now += multi * SECOND;
-                    localtime_r(&now, &local_tm);
+                    localtime_safe(&now, &local_tm);
                     strftime(buf, size, "%Y-%m-%d %H:%M:S", &local_tm);
                     break;
                 case 'm':
                     now += multi * MINUTE;
-                    localtime_r(&now, &local_tm);
+                    localtime_safe(&now, &local_tm);
                     strftime(buf, size, "%Y-%m-%d %H:%M:59", &local_tm);
                     break;
                 case 'h':
                     now += multi * HOUR;
-                    localtime_r(&now, &local_tm);
+                    localtime_safe(&now, &local_tm);
                     strftime(buf, size, "%Y-%m-%d %H:59:59", &local_tm);
                     break;
                 case 'd':
                     now += multi * DAY;
-                    localtime_r(&now, &local_tm);
+                    localtime_safe(&now, &local_tm);
                     strftime(buf, size, "%Y-%m-%d 23:59:59", &local_tm);
                     break;
                 case 'w':
                     now += multi * WEEK;
-                    localtime_r(&now, &local_tm);
+                    localtime_safe(&now, &local_tm);
                     strftime(buf, size, "%Y-%m-%d 23:59:59", &local_tm);
                     break;
             }
         } else {
-            localtime_r(&now, &local_tm);
+            localtime_safe(&now, &local_tm);
             if (c1 == 'm' && c2 == 'o') {
                 local_tm.tm_mon += multi * MONTH;
                 mktime(&local_tm); // TODO normalization inconsistent across platforms

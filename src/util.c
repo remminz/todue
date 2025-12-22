@@ -27,7 +27,7 @@ void print_row(
     if (due) {
         printf(" | due: %s", due);
     }
-    
+
     putchar('\n');
 }
 
@@ -68,5 +68,17 @@ char *xstrdup(const char *str) {
         memcpy(p, str, len);
     }
     return p;
+#endif
+}
+
+struct tm *localtime_safe(const time_t *t, struct tm *result) {
+    if (t == NULL || result == NULL) {
+        return NULL;
+    }
+
+#ifdef _WIN32
+    return localtime_s(result, t);
+#else
+    return localtime_r(t, result);
 #endif
 }
