@@ -19,3 +19,4 @@ db/
 build/
 bin/
 log/
+.todue/
