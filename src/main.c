@@ -1,12 +1,13 @@
 #include <stdio.h>
-#include <sqlite3.h>
 #include <time.h>
 
-#include "db.h"
-#include "util.h"
-#include "datetime.h"
+#include <sqlite3.h>
+
 #include "cli.h"
+#include "datetime.h"
+#include "db.h"
 #include "log.h"
+#include "util.h"
 
 int main(int argc, char **argv) {
     log_set_level(LOG_DEBUG);
@@ -21,7 +22,7 @@ int main(int argc, char **argv) {
         ++argv;
         execute_cmd(&db, argc, argv);
     }
-    
+
     db_close(db);
     log_close();
     return 0;

@@ -50,7 +50,7 @@ int db_init(sqlite3 *db) {
     }
 }
 
-int db_add_todo(sqlite3 *db, const char *brief) {
+int db_add_todue(sqlite3 *db, const char *brief) {
     sqlite3_stmt *stmt;
     sqlite3_prepare_v2(
         db,
@@ -90,7 +90,7 @@ int db_mark_done(sqlite3 *db, int id) {
     return 0;
 }
 
-int db_delete_todo(sqlite3 *db, int id) {
+int db_delete_todue(sqlite3 *db, int id) {
     sqlite3_stmt *stmt;
     sqlite3_prepare_v2(
         db,
@@ -110,7 +110,7 @@ int db_delete_todo(sqlite3 *db, int id) {
     return 0;
 }
 
-int db_list(sqlite3 *db, todo_callback callback, void *user_data) {
+int db_list(sqlite3 *db, todue_callback callback, void *user_data) {
     sqlite3_stmt *stmt;
     sqlite3_prepare_v2(
         db,

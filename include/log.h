@@ -2,7 +2,6 @@
 #define LOG_H
 
 #include <stdio.h>
-#include <stdarg.h>
 
 typedef enum {
     LOG_NONE  = -1,
@@ -15,11 +14,13 @@ typedef enum {
 void log_set_level(LogLevel level);
 void log_set_file(const char *path);
 void log_close(void);
-void log_msg(LogLevel level,
-             const char *file,
-             int line,
-             const char *format,
-             ...);
+void log_msg(
+    LogLevel level,
+    const char *file,
+    int line,
+    const char *format,
+    ...
+);
 
 #ifdef LOG_DISABLED
     #define LOG_ERROR(...)

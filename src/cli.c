@@ -2,12 +2,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <string.h>
+#include <time.h>
 
 #include "datetime.h"
-#include "util.h"
 #include "log.h"
+#include "util.h"
 
 static char *info_str(sqlite3 *db) {
     char time_str[20];
@@ -20,18 +20,18 @@ static char *info_str(sqlite3 *db) {
     return str;
 }
 
-int parse_args(const char *line, int *argc, char ***argv) {
+static int parse_cmd(const char *line, int *argc, char ***argv) {
     *argc = 0;
     *argv = NULL;
 
-    if (!line || line[0] == '\0') {
+    if (line == NULL || line[0] == '\0') {
         LOG_DEBUG("No line to parse");
         return 0;
     }
 
     int rc = 0;
     char *line_copy = xstrdup(line);
-    if (!line_copy) {
+    if (line_copy == NULL) {
         LOG_ERROR("Failed strdup allocation");
         rc = -1;
         goto cleanup;
@@ -42,13 +42,13 @@ int parse_args(const char *line, int *argc, char ***argv) {
     
     int count = 0;
     char **args = malloc(1 * sizeof(*args));
-    if (!args) {
+    if (args == NULL) {
         LOG_ERROR("Failed malloc of argv");
         goto cleanup;
         rc = -1;
     }
-    args[count] = xstrdup(strtok_r(line_copy, " ", &rest));
-    if (!args[count++]) {
+    args[count] = xstrdup(strtok_r(line_copy, " ", &rest)); // put gauranteed command name into args
+    if (args[count++] == NULL) {
         LOG_ERROR("Failed strdup allocation");
         rc = -1;
         goto cleanup;
@@ -60,7 +60,7 @@ int parse_args(const char *line, int *argc, char ***argv) {
             break;
         }
         args = realloc(args, (count + 1) * sizeof(*args));
-        if (!args) {
+        if (args == NULL) {
             LOG_ERROR("Failed realloc of argv");
             goto cleanup;
             rc = -1;
@@ -75,7 +75,7 @@ int parse_args(const char *line, int *argc, char ***argv) {
                 strcat(buf, token);
                 strcat(buf, " ");
                 token = strtok_r(NULL, " ", &rest);
-                if (!token) {
+                if (token == NULL) {
                     LOG_ERROR("Unmatched quote in args");
                     goto cleanup;
                     rc = -1;
@@ -88,7 +88,7 @@ int parse_args(const char *line, int *argc, char ***argv) {
         } else {
             args[count] = xstrdup(token);
         }
-        if (!args[count++]) {
+        if (args[count++] == NULL) {
             LOG_ERROR("Failed strdup allocation");
             rc = -1;
             goto cleanup;
@@ -114,17 +114,18 @@ void start_repl(sqlite3 **db) {
     fputs("todue> ", stdout);
     while (fgets(input, CLI_LINE_LIMIT, stdin)) {
         input[strcspn(input, "\n")] = '\0';
-        if (!strcmp(input, "quit")) {
+        if (strcmp(input, "quit") == 0) {
             break;
         }
 
-        parse_args(input, &argc, &argv);
+        parse_cmd(input, &argc, &argv);
         execute_cmd(db, argc, argv);
 
         for (int i = 0; i < argc; ++i) {
             free(argv[i]);
         }
         free(argv);
+        
         fputs("todue> ", stdout);
     }
     

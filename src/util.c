@@ -1,35 +1,44 @@
 #include "util.h"
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <ctype.h>
 #include <string.h>
 
 #include "log.h"
 
-void print_row(int id,
-               const char *brief,
-               const char *notes,
-               const char *created,
-               const char *due,
-               int done,
-               void *user_data)
+#define BRIEF_WIDTH 20
+
+void print_row(
+    int         id,
+    const char *brief,
+    const char *notes,
+    const char *created,
+    const char *due,
+    int         done,
+    void       *user_data)
 {
-    printf("%d [%c] %-20s", id, done ? 'X' : ' ', brief);
+    (void)notes;
+    (void)created;
+    (void)user_data;
+
+    printf("%d [%c] %-*.*s", id, done ? 'X' : ' ', BRIEF_WIDTH, BRIEF_WIDTH, brief);
+
     if (due) {
         printf(" | due: %s", due);
     }
+    
     putchar('\n');
 }
 
-const char *substr(const char *source, size_t offset, size_t size) {
-    if (source == NULL || offset < 0 || size <= 0) {
+const char *substr(const char *src, size_t idx, size_t size) {
+    if (src == NULL || idx < 0 || size <= 0) {
         return NULL;
     }
 
-    size_t source_len = strlen(source);
-    if (offset + size > source_len) {
-        size = source_len - offset;
+    size_t src_len = strlen(src);
+    if (idx + size > src_len) {
+        size = src_len - idx;
     }
 
     char *substring = malloc(sizeof(char) * (size + 1));
@@ -37,13 +46,13 @@ const char *substr(const char *source, size_t offset, size_t size) {
         return NULL;
     }
 
-    strncpy(substring, source + offset, size);
+    strncpy(substring, src + idx, size);
     substring[size] = '\0';
 
     return substring;
 }
 
-void skip_spaces(char **str) {
+void skip_space(char **str) {
     while (**str && isspace(**str)) {
         ++(*str);
     }

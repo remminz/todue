@@ -1,12 +1,12 @@
 #include "commands.h"
 
-#include <stdlib.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "db.h"
-#include "util.h"
 #include "log.h"
+#include "util.h"
 
 static int cmd_help(sqlite3 **db, int argc, char **argv) {
     (void)db;
@@ -30,7 +30,7 @@ static int cmd_load(sqlite3 **db, int argc, char **argv) {
     int rc = 0;
     char *old_path = xstrdup(sqlite3_db_filename(*db, "main"));
 
-    if (!old_path) {
+    if (old_path == NULL) {
         LOG_ERROR("Failed to save old path; can't continue without fallback");
         fprintf(stderr, "Encountered unexpected error");
         rc = -1;
@@ -63,7 +63,7 @@ static int cmd_add(sqlite3 **db, int argc, char **argv) {
         fprintf(stderr, "usage: todo add <id>\n");
         return -1;
     }
-    if (db_add_todo(*db, argv[1])) {
+    if (db_add_todue(*db, argv[1])) {
         fprintf(stderr, "Failed to add item");
         return -1;
     }
@@ -77,7 +77,7 @@ static int cmd_remove(sqlite3 **db, int argc, char **argv) {
         return -1;
     }
     int id = strtoull(argv[1], NULL, 10);
-    if (db_delete_todo(*db, id)) {
+    if (db_delete_todue(*db, id)) {
         fprintf(stderr, "Failed to remove item");
         return -1;
     }
@@ -109,7 +109,7 @@ static int cmd_list(sqlite3 **db, int argc, char **argv) {
     return 0;
 }
 
-Command commands[] = {
+const Command commands[] = {
     {"help", cmd_help},
     {"load", cmd_load},
     {"add", cmd_add},
@@ -119,7 +119,7 @@ Command commands[] = {
 };
 
 int execute_cmd(sqlite3 **db, int argc, char **argv) {
-    if (argc == 0 || !argv) {
+    if (argc == 0 || argv == NULL) {
         return 0;
     }
 
@@ -129,17 +129,20 @@ int execute_cmd(sqlite3 **db, int argc, char **argv) {
         cmd_len += strlen(argv[i]);
     }
     char *cmd = malloc(cmd_len * sizeof(*cmd));
-    if (!cmd) {
+    if (cmd == NULL) {
         rc = -1;
         goto cleanup;
     }
     cmd[0] = '\0';
     for (int i = 0; i < argc; ++i) {
         strcat(cmd, argv[i]);
+        if (i < argc - 1) {
+            strcat(cmd, " ");
+        }
     }
 
     for (size_t i = 0; i < sizeof(commands) / sizeof(Command); ++i) {
-        if (!strcmp(argv[0], commands[i].name)) {
+        if (strcmp(argv[0], commands[i].name) == 0) {
             LOG_DEBUG("Matched command '%s' from '%s'", argv[0], cmd);
             if (commands[i].func(db, argc, argv)) {
                 LOG_ERROR("Non zero return code from '%s'", cmd);
