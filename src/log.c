@@ -53,10 +53,7 @@ void log_msg(
     localtime_safe(&now, &timestamp);
 
     if (log_fp == NULL) {
-        log_fp = fopen("log/debug.log", "a");
-        if (log_fp == NULL) {
-            log_fp = stderr;
-        }
+        log_fp = stderr;
     }
 
     fprintf(

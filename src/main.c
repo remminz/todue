@@ -11,6 +11,8 @@
 
 int main(int argc, char **argv) {
     log_set_level(LOG_DEBUG);
+    log_set_file("log/debug.log");
+    
     sqlite3 *db;
     db_open(&db, "db/todue.db");
     db_init(db);
