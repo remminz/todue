@@ -11,6 +11,10 @@
 #include "util.h"
 
 int main(int argc, char **argv) {
+    if (argc == 0 || argv[0] == NULL) {
+        return 0;
+    }
+
     ensure_todue_dir();
 
     char log_path[1024];
