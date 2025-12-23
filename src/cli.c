@@ -116,16 +116,21 @@ void start_repl(sqlite3 **db) {
         input[strcspn(input, "\n")] = '\0';
         if (strcmp(input, "quit") == 0) {
             break;
-        }
+        } else if (strcmp(input, "clear") == 0) {
+            printf("\033[2J\033[H");
+            fflush(stdout);
+            info = info_str(*db);
+            puts(info);
+            free(info);
+        } else {
+            parse_cmd(input, &argc, &argv);
+            execute_cmd(db, argc, argv);
 
-        parse_cmd(input, &argc, &argv);
-        execute_cmd(db, argc, argv);
-
-        for (int i = 0; i < argc; ++i) {
-            free(argv[i]);
+            for (int i = 0; i < argc; ++i) {
+                free(argv[i]);
+            }
+            free(argv);
         }
-        free(argv);
-        
         fputs("todue> ", stdout);
     }
     
