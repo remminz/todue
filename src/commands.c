@@ -17,6 +17,7 @@ static int cmd_help(sqlite3 **db, int argc, char **argv) {
         "todo commands:\n"
         "  help            | Show this screen\n"
         "  load <db_path>  | Load a different database\n"
+        "  reload          | Reload the current database\n"
         "  add <brief>     | Add an item\n"
         "  rm <id>         | Remove an item\n"
         "  done <id>       | Mark an item as done\n"
@@ -32,7 +33,7 @@ static int cmd_load(sqlite3 **db, int argc, char **argv) {
 
     if (old_path == NULL) {
         LOG_ERROR("Failed to save old path; can't continue without fallback");
-        fprintf(stderr, "Encountered unexpected error");
+        fprintf(stderr, "Encountered unexpected error\n");
         rc = -1;
     } else if (argc < 2) {
         LOG_ERROR("No arguments passed to load command");
@@ -45,7 +46,7 @@ static int cmd_load(sqlite3 **db, int argc, char **argv) {
         fprintf(stderr, "Unable to open new db '%s'\n", argv[1]);
         if (db_open(db, old_path)) { // attempt to reopen old database
             LOG_ERROR("Failed to reopen old db");
-            fprintf(stderr, "Old db could not be reopened: try again or quit");
+            fprintf(stderr, "Old db could not be reopened: try again or quit\n");
         }
         rc = -1;
     } else if (db_init(*db)) {
@@ -57,6 +58,37 @@ static int cmd_load(sqlite3 **db, int argc, char **argv) {
     return rc;
 }
 
+static int cmd_reload(sqlite3 **db, int argc, char **argv) {
+    (void)argc;
+    (void)argv;
+
+     if (db == NULL) {
+        LOG_ERROR("Cannot reload null database");
+        fprintf(stderr, "No db is open to reload");
+        return -1;
+    }
+
+    int rc = 0;
+    char *path = xstrdup(sqlite3_db_filename(*db, "main"));
+
+    if (db_close(*db)) {
+        LOG_ERROR("Failed at close stage of reload");
+        fprintf(stderr, "Failed to reload db\n");
+        rc = -1;
+    } else if (db_open(db, path)) {
+        LOG_ERROR("Failed at open stage of reload");
+        fprintf(stderr, "Failed to reload db\n");
+        rc = -1;
+    } else if (db_init(*db)) {
+        LOG_ERROR("Failed at init stage of reload");
+        fprintf(stderr, "Failed to reload db\n");
+        rc = -1;
+    }
+
+    free(path);
+    return rc;
+}
+
 static int cmd_add(sqlite3 **db, int argc, char **argv) {
     if (argc < 2) {
         LOG_ERROR("No arguments passed to add command");
@@ -64,7 +96,11 @@ static int cmd_add(sqlite3 **db, int argc, char **argv) {
         return -1;
     }
     if (db_add_todue(*db, argv[1])) {
-        fprintf(stderr, "Failed to add item");
+        fprintf(stderr, "Failed to add item\n");
+        if (sqlite3_errcode(*db) == SQLITE_ERROR &&
+            strncmp(sqlite3_errmsg(*db), "no such table", 13) == 0) {
+            fprintf(stderr, "Database not initialized; try reload command\n");
+        }
         return -1;
     }
     return 0;
@@ -78,7 +114,11 @@ static int cmd_remove(sqlite3 **db, int argc, char **argv) {
     }
     int id = strtoull(argv[1], NULL, 10);
     if (db_delete_todue(*db, id)) {
-        fprintf(stderr, "Failed to remove item");
+        fprintf(stderr, "Failed to remove item\n");
+        if (sqlite3_errcode(*db) == SQLITE_ERROR &&
+            strncmp(sqlite3_errmsg(*db), "no such table", 13) == 0) {
+            fprintf(stderr, "Database not initialized; try reload command\n");
+        }
         return -1;
     }
     return 0;
@@ -92,7 +132,11 @@ static int cmd_done(sqlite3 **db, int argc, char **argv) {
     }
     int id = strtoull(argv[1], NULL, 10);
     if (db_mark_done(*db, id)) {
-        fprintf(stderr, "Failed to mark item done");
+        fprintf(stderr, "Failed to mark item done\n");
+        if (sqlite3_errcode(*db) == SQLITE_ERROR &&
+            strncmp(sqlite3_errmsg(*db), "no such table", 13) == 0) {
+            fprintf(stderr, "Database not initialized; try reload command\n");
+        }
         return -1;
     }
     return 0;
@@ -103,7 +147,11 @@ static int cmd_list(sqlite3 **db, int argc, char **argv) {
     (void)argv;
 
     if (db_list(*db, print_row, NULL)) {
-        fprintf(stderr, "Failed to list items");
+        fprintf(stderr, "Failed to list items\n");
+        if (sqlite3_errcode(*db) == SQLITE_ERROR &&
+            strncmp(sqlite3_errmsg(*db), "no such table", 13) == 0) {
+            fprintf(stderr, "Database not initialized; try reload command\n");
+        }
         return -1;
     }
     return 0;
@@ -112,6 +160,7 @@ static int cmd_list(sqlite3 **db, int argc, char **argv) {
 const Command commands[] = {
     {"help", cmd_help},
     {"load", cmd_load},
+    {"reload", cmd_reload},
     {"add", cmd_add},
     {"rm", cmd_remove},
     {"done", cmd_done},
