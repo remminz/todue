@@ -15,8 +15,7 @@ Icon
 *.db-shm
 *.db-wal
 
-db/
-build/
-bin/
-log/
+# Project specific
+todue
 .todue/
+build/

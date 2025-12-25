@@ -1,13 +1,13 @@
-#include "cli.h"
+#include "todue/cli.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
-#include "datetime.h"
-#include "log.h"
-#include "util.h"
+#include "todue/datetime.h"
+#include "todue/log.h"
+#include "todue/util.h"
 
 static char *info_str(sqlite3 *db) {
     char time_str[20];

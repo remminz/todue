@@ -1,14 +1,14 @@
 #include <stdio.h>
 #include <time.h>
 
-#include <sqlite3.h>
+#include "sqlite/sqlite3.h"
 
-#include "cli.h"
-#include "datetime.h"
-#include "db.h"
-#include "log.h"
-#include "path.h"
-#include "util.h"
+#include "todue/cli.h"
+#include "todue/datetime.h"
+#include "todue/db.h"
+#include "todue/log.h"
+#include "todue/path.h"
+#include "todue/util.h"
 
 int main(int argc, char **argv) {
     if (argc == 0 || argv[0] == NULL) {

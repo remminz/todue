@@ -1,11 +1,11 @@
-#include "util.h"
+#include "todue/util.h"
 
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "log.h"
+#include "todue/log.h"
 
 #define BRIEF_WIDTH 20
 

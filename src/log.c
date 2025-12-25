@@ -1,9 +1,9 @@
-#include "log.h"
+#include "todue/log.h"
 
 #include <stdarg.h>
 #include <time.h>
 
-#include "util.h"
+#include "todue/util.h"
 
 static LogLevel current_level = LOG_INFO;
 static FILE *log_fp = NULL;

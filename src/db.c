@@ -1,8 +1,8 @@
-#include "db.h"
+#include "todue/db.h"
 
 #include <stdio.h>
 
-#include "log.h"
+#include "todue/log.h"
 
 int db_open(sqlite3 **db, const char *path) {
     int rc = sqlite3_open(path, db);

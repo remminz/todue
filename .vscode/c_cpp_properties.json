@@ -4,7 +4,8 @@
             "name": "todue",
             "includePath": [
                 "${workspaceFolder}",
-                "${workspaceFolder}/include"
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/third_party"
             ],
             "cStandard": "c11"
         }

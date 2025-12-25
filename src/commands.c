@@ -1,12 +1,12 @@
-#include "commands.h"
+#include "todue/commands.h"
 
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "db.h"
-#include "log.h"
-#include "util.h"
+#include "todue/db.h"
+#include "todue/log.h"
+#include "todue/util.h"
 
 static int cmd_help(sqlite3 **db, int argc, char **argv) {
     (void)db;

@@ -1,51 +1,54 @@
-CC           := gcc
-CFLAGS 		  = -std=c11 -Wall -Wextra -MMD -MP -Iinclude
-DEBUG_FLAGS   = -g -O0 -DDEBUG
-RELEASE_FLAGS = -O2
-LIB           = -lsqlite3
+APP           := todue
+CC            := gcc
+STD_VER       := -std=c11
 
-SRC_DIR := src
-OBJ_DIR := build
-BIN_DIR := bin
+SRC_DIR       := src
+INC_DIR       := include
+BUILD_DIR     := build
+OBJ_DIR       := $(BUILD_DIR)/obj
+TP_DIR        := third_party
 
-TARGET := $(BIN_DIR)/todue
+CFLAGS        := -Wall -Wextra
+CFLAGS        += -I$(INC_DIR) -I$(TP_DIR)
+CFLAGS        += -MMD -MP
+DEBUG_FLAGS   := -g -O0 -DDEBUG
+RELEASE_FLAGS := -O2
 
-SRCS := $(wildcard $(SRC_DIR)/*.c)
-OBJS := $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
-DEPS := $(OBJS:.o=.d)
+SRC  := $(wildcard $(SRC_DIR)/*.c)
+SRC  += $(TP_DIR)/sqlite/sqlite3.c
+OBJ  := $(SRC:%.c=$(OBJ_DIR)/%.o)
+DEPS := $(OBJ:.o=.d)
+
+.PHONY: all debug release run clean reset
 
 all: debug
 
-dirs:
-	@mkdir -p $(OBJ_DIR) $(BIN_DIR)
-
 debug: CFLAGS += $(DEBUG_FLAGS)
-debug: dirs $(TARGET)
-	@echo "Debug build complete: $(TARGET)"
+debug: $(APP)
+	@echo "Debug build complete: $(APP)"
 
 release: CFLAGS += $(RELEASE_FLAGS)
-release: dirs $(TARGET)
-	@echo "Release build complete: $(TARGET)"
+release: $(APP)
+	@echo "Release build complete: $(APP)"
 
-$(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) $(LIB) $^ -o $@
+$(APP): $(OBJ)
+	$(CC) $(STD_VER) $^ -o $@
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | dirs
-	$(CC) $(CFLAGS) -c $< -o $@
-
--include $(DEPS)
+$(OBJ_DIR)/%.o: %.c
+	@mkdir -p $(dir $@)
+	$(CC) $(STD_VER) $(CFLAGS) -c $< -o $@
 
 run:
-	@if [ -x "$(TARGET)" ]; then \
-		"$(TARGET)"; \
+	@if [ -x "$(APP)" ]; then \
+		"./$(APP)"; \
 	else \
-		echo "$(TARGET) not found. Nothing to run."; \
+		echo "$(APP) not found. Nothing to run."; \
 	fi
 
 clean:
-	rm -rf $(OBJ_DIR)/* $(BIN_DIR)/*
+	rm -rf $(OBJ_DIR)/$(SRC_DIR)
 
 reset:
-	rm -rf $(OBJ_DIR) $(BIN_DIR)
+	rm -rf $(BUILD_DIR) $(APP)
 
-.PHONY: all dirs debug release run clean reset
+-include $(DEPS)
