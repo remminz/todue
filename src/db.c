@@ -63,7 +63,7 @@ int db_add_todue(sqlite3 *db, const char *brief) {
     int rc = sqlite3_step(stmt);
     if (rc != SQLITE_DONE) {
         sqlite3_finalize(stmt);
-        LOG_ERROR("Failed to add todo item: %s", sqlite3_errmsg(db));
+        LOG_ERROR("Failed to add item: %s", sqlite3_errmsg(db));
         return -1;
     }
     sqlite3_finalize(stmt);
@@ -103,10 +103,42 @@ int db_delete_todue(sqlite3 *db, int id) {
     int rc = sqlite3_step(stmt);
     if (rc != SQLITE_DONE) {
         sqlite3_finalize(stmt);
-        LOG_ERROR("Failed to delete todo item: %s", sqlite3_errmsg(db));
+        LOG_ERROR("Failed to delete item: %s", sqlite3_errmsg(db));
         return -1;
     }
     sqlite3_finalize(stmt);
+    return 0;
+}
+
+int db_delete_range(sqlite3 *db, int start, int end) {
+    sqlite3_stmt *stmt;
+    sqlite3_prepare_v2(
+        db,
+        "DELETE FROM todue WHERE id >= ? AND id <= ?;",
+        -1,
+        &stmt,
+        NULL
+    );
+    sqlite3_bind_int(stmt, 1, start);
+    sqlite3_bind_int(stmt, 2, end);
+    int rc = sqlite3_step(stmt);
+    if (rc != SQLITE_DONE) {
+        sqlite3_finalize(stmt);
+        LOG_ERROR("Failed to delete range of items: %s", sqlite3_errmsg(db));
+        return -1;
+    }
+    sqlite3_finalize(stmt);
+    return 0;
+}
+
+int db_delete_done(sqlite3 *db) {
+    const char* sql = "DELETE FROM todue WHERE done = 1;";
+    int rc = sqlite3_exec(db, sql, NULL, NULL, NULL);
+
+    if (rc != SQLITE_OK) {
+        LOG_ERROR("Failed to delete items: %s", sqlite3_errmsg(db));
+        return -1;
+    }
     return 0;
 }
 

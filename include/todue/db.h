@@ -19,6 +19,8 @@ int db_init(sqlite3 *db);
 int db_add_todue(sqlite3 *db, const char *brief);
 int db_mark_done(sqlite3 *db, int id);
 int db_delete_todue(sqlite3 *db, int id);
+int db_delete_range(sqlite3 *db, int start, int end);
+int db_delete_done(sqlite3 *db);
 int db_list(sqlite3 *db, todue_callback callback, void *user_data);
 
 #endif // DB_H

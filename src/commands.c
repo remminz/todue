@@ -15,14 +15,14 @@ static int cmd_help(sqlite3 **db, int argc, char **argv) {
 
     printf(
         "todo commands:\n"
-        "  help            | Show this screen\n"
-        "  load <db_path>  | Load a different database\n"
-        "  reload          | Reload the current database\n"
-        "  add <brief>     | Add an item\n"
-        "  rm <id>         | Remove an item\n"
-        "  done <id>       | Mark an item as done\n"
-        "  ls              | List the todues\n"
-        "  quit            | Exit the CLI\n"
+        "  help                        | Show this screen\n"
+        "  load db_path                | Load a different database\n"
+        "  reload                      | Reload the current database\n"
+        "  add brief                   | Add an item\n"
+        "  rm [id | id1,id2-id4,id5]   | Remove one or more items\n"
+        "  done id                     | Mark an item as done\n"
+        "  ls                          | List the todues\n"
+        "  quit                        | Exit the CLI\n"
     );
     return 0;
 }
@@ -112,14 +112,51 @@ static int cmd_remove(sqlite3 **db, int argc, char **argv) {
         fprintf(stderr, "usage: todo rm <id>\n");
         return -1;
     }
-    int id = strtoull(argv[1], NULL, 10);
-    if (db_delete_todue(*db, id)) {
-        fprintf(stderr, "Failed to remove item\n");
-        if (sqlite3_errcode(*db) == SQLITE_ERROR &&
-            strncmp(sqlite3_errmsg(*db), "no such table", 13) == 0) {
-            fprintf(stderr, "Database not initialized; try reload command\n");
+
+    if (strcmp(argv[1], "done") == 0) {
+        if (db_delete_done(*db)) {
+            fprintf(stderr, "Failed to remove done items");
+            return -1;
         }
-        return -1;
+        return 0;
+    }
+
+    char *end = NULL;
+    unsigned long id = strtoul(argv[1], &end, 10);
+    
+    while (id != 0) {
+        if (*end == '\0') {
+            db_delete_todue(*db, id);
+            return 0;
+        }
+        if (*end == ',') {
+            if (db_delete_todue(*db, id)) {
+                fprintf(stderr, "Failed to remove item\n");
+                if (sqlite3_errcode(*db) == SQLITE_ERROR &&
+                    strncmp(sqlite3_errmsg(*db), "no such table", 13) == 0) {
+                    fprintf(stderr, "Database not initialized; try reload command\n");
+                }
+                return -1;
+            }
+        } else if (*end == '-') {
+            ++end;
+            if (db_delete_range(*db, id, strtoul(end, &end, 10))) {
+                fprintf(stderr, "Failed to remove items");
+                if (sqlite3_errcode(*db) == SQLITE_ERROR &&
+                    strncmp(sqlite3_errmsg(*db), "no such table", 13) == 0) {
+                    fprintf(stderr, "Database not initialized; try reload command\n");
+                }
+                return -1;
+            }
+        }
+        if (*end == ',') {
+            ++end;
+            id = strtoul(end, &end, 10);
+        } else {
+            LOG_ERROR("Invalid character '%c' in rm args", *end);
+            fprintf(stderr, "Invalid character '%c' in command arguments\n", *end);
+            return -1;
+        }
     }
     return 0;
 }
