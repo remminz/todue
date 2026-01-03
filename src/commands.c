@@ -97,10 +97,7 @@ static int cmd_add(sqlite3 **db, int argc, char **argv) {
     }
     if (db_add_todue(*db, argv[1])) {
         fprintf(stderr, "Failed to add item\n");
-        if (sqlite3_errcode(*db) == SQLITE_ERROR &&
-            strncmp(sqlite3_errmsg(*db), "no such table", 13) == 0) {
-            fprintf(stderr, "Database not initialized; try reload command\n");
-        }
+        check_table(*db);
         return -1;
     }
     return 0;
@@ -132,20 +129,14 @@ static int cmd_remove(sqlite3 **db, int argc, char **argv) {
         if (*end == ',') {
             if (db_delete_todue(*db, id)) {
                 fprintf(stderr, "Failed to remove item\n");
-                if (sqlite3_errcode(*db) == SQLITE_ERROR &&
-                    strncmp(sqlite3_errmsg(*db), "no such table", 13) == 0) {
-                    fprintf(stderr, "Database not initialized; try reload command\n");
-                }
+                check_table(*db);
                 return -1;
             }
         } else if (*end == '-') {
             ++end;
             if (db_delete_range(*db, id, strtoul(end, &end, 10))) {
                 fprintf(stderr, "Failed to remove items");
-                if (sqlite3_errcode(*db) == SQLITE_ERROR &&
-                    strncmp(sqlite3_errmsg(*db), "no such table", 13) == 0) {
-                    fprintf(stderr, "Database not initialized; try reload command\n");
-                }
+                check_table(*db);
                 return -1;
             }
         }
@@ -170,10 +161,7 @@ static int cmd_done(sqlite3 **db, int argc, char **argv) {
     int id = strtoull(argv[1], NULL, 10);
     if (db_mark_done(*db, id)) {
         fprintf(stderr, "Failed to mark item done\n");
-        if (sqlite3_errcode(*db) == SQLITE_ERROR &&
-            strncmp(sqlite3_errmsg(*db), "no such table", 13) == 0) {
-            fprintf(stderr, "Database not initialized; try reload command\n");
-        }
+        check_table(*db);
         return -1;
     }
     return 0;
@@ -185,10 +173,7 @@ static int cmd_list(sqlite3 **db, int argc, char **argv) {
 
     if (db_list(*db, print_row, NULL)) {
         fprintf(stderr, "Failed to list items\n");
-        if (sqlite3_errcode(*db) == SQLITE_ERROR &&
-            strncmp(sqlite3_errmsg(*db), "no such table", 13) == 0) {
-            fprintf(stderr, "Database not initialized; try reload command\n");
-        }
+        check_table(*db);
         return -1;
     }
     return 0;

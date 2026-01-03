@@ -3,6 +3,8 @@
 
 #include "sqlite/sqlite3.h"
 
+#include <stdbool.h>
+
 typedef void (*todue_callback)(
     int         id,
     const char *brief,
@@ -22,5 +24,7 @@ int db_delete_todue(sqlite3 *db, int id);
 int db_delete_range(sqlite3 *db, int start, int end);
 int db_delete_done(sqlite3 *db);
 int db_list(sqlite3 *db, todue_callback callback, void *user_data);
+
+bool no_such_table(sqlite3 *db);
 
 #endif // DB_H

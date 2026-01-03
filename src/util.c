@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "todue/db.h"
 #include "todue/log.h"
 
 #define BRIEF_WIDTH 20
@@ -81,4 +82,10 @@ struct tm *localtime_safe(const time_t *t, struct tm *result) {
 #else
     return localtime_r(t, result);
 #endif
+}
+
+void check_table(sqlite3 *db) {
+    if (no_such_table(db)) {
+        fprintf(stderr, "Database not initialized; try reload command\n");
+    }
 }

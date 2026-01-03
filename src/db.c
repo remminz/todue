@@ -1,6 +1,7 @@
 #include "todue/db.h"
 
 #include <stdio.h>
+#include <string.h>
 
 #include "todue/log.h"
 
@@ -168,4 +169,8 @@ int db_list(sqlite3 *db, todue_callback callback, void *user_data) {
     }
     sqlite3_finalize(stmt);
     return 0;
+}
+
+bool no_such_table(sqlite3 *db) {
+    return (sqlite3_errcode(db) == SQLITE_ERROR && strncmp(sqlite3_errmsg(db), "no such table", 13) == 0);
 }
