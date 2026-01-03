@@ -20,6 +20,14 @@ static char *info_str(sqlite3 *db) {
     return str;
 }
 
+static void clear(sqlite3 *db) {
+    printf("\033[2J\033[H");
+    fflush(stdout);
+    char *info = info_str(db);
+    puts(info);
+    free(info);
+}
+
 static int parse_cmd(const char *line, int *argc, char ***argv) {
     *argc = 0;
     *argv = NULL;
@@ -103,9 +111,7 @@ cleanup:
 }
 
 void start_repl(sqlite3 **db) {
-    char *info = info_str(*db);
-    puts(info);
-    free(info);
+    clear(*db);
 
     int argc;
     char **argv;
@@ -117,14 +123,14 @@ void start_repl(sqlite3 **db) {
         if (strcmp(input, "quit") == 0) {
             break;
         } else if (strcmp(input, "clear") == 0) {
-            printf("\033[2J\033[H");
-            fflush(stdout);
-            info = info_str(*db);
-            puts(info);
-            free(info);
+            clear(*db);
         } else {
             parse_cmd(input, &argc, &argv);
             execute_cmd(db, argc, argv);
+            
+            if (strcmp(argv[0], "load") == 0) {
+                clear(*db);
+            }
 
             for (int i = 0; i < argc; ++i) {
                 free(argv[i]);
