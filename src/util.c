@@ -1,6 +1,7 @@
 #include "todue/util.h"
 
 #include <ctype.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,7 +9,20 @@
 #include "todue/db.h"
 #include "todue/log.h"
 
-#define BRIEF_WIDTH 20
+// ANSI Sequences
+#define BOLD "\033[1m"
+#define DIM "\033[2m"
+#define END_BOLD_DIM "\033[22m"
+#define ITALIC "\033[3m"
+#define END_ITALIC "\033[23m"
+#define STRIKETHROUGH "\033[9m"
+#define END_STRIKETHROUGH "\033[29m"
+#define END_ALL "\033[0m"
+
+#define WHITE "\033[38;5;255m"
+#define LIGHT_GRAY "\033[38;5;253m"
+#define GRAY "\033[38;5;250m"
+
 
 void print_row(
     int         id,
@@ -19,15 +33,31 @@ void print_row(
     int         done,
     void       *user_data)
 {
-    (void)notes;
-    (void)created;
     (void)user_data;
+    const int LEFT_WIDTH = 30;
+    const int RIGHT_WIDTH = 80;
 
-    printf("%d [%c] %-*.*s", id, done ? 'X' : ' ', BRIEF_WIDTH, BRIEF_WIDTH, brief);
+    printf("%s%3d%s [%c]%s ", BOLD, id, END_ITALIC, done ? 'X' : ' ', END_BOLD_DIM);
+    if (done) {
+        fputs(STRIKETHROUGH DIM, stdout);
+    } else {
+        fputs(WHITE BOLD, stdout);
+    }
+    printf("%-*.*s%s |", LEFT_WIDTH, LEFT_WIDTH, brief, END_ALL);
+
+    if (notes) {
+        printf(" %.*s\n", RIGHT_WIDTH, notes);
+    } else {
+        printf(" %s%.*s%s\n", DIM, RIGHT_WIDTH, "No notes", END_BOLD_DIM);
+    }
 
     if (due) {
-        printf(" | due: %s", due);
+        printf("   %sdue: %-*s%s |", LIGHT_GRAY ITALIC, LEFT_WIDTH, due, END_ITALIC);
+    } else {
+        printf("\t%s%-*s%s |", DIM, LEFT_WIDTH, "No due date", END_BOLD_DIM);
     }
+
+    printf("%s created: %s%s\n", GRAY ITALIC, created, END_ALL);
 
     putchar('\n');
 }
