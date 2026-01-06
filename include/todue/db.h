@@ -18,7 +18,7 @@ typedef void (*todue_callback)(
 int db_open(sqlite3 **db, const char *path);
 int db_close(sqlite3 *db);
 int db_init(sqlite3 *db);
-int db_add_todue(sqlite3 *db, const char *brief);
+int db_add_todue(sqlite3 *db, const char *brief, const char *notes, const char *due);
 int db_mark_done(sqlite3 *db, int id);
 int db_delete_todue(sqlite3 *db, int id);
 int db_delete_range(sqlite3 *db, int start, int end);

@@ -1,5 +1,5 @@
 APP           := todue
-CC            := gcc
+CC            := clang
 STD_VER       := -std=c11
 
 SRC_DIR       := src
@@ -11,7 +11,8 @@ TP_DIR        := third_party
 CFLAGS        := -Wall -Wextra
 CFLAGS        += -I$(INC_DIR) -I$(TP_DIR)
 CFLAGS        += -MMD -MP
-DEBUG_FLAGS   := -g -O0 -DDEBUG
+LDFLAGS       := -fsanitize=address -fno-omit-frame-pointer
+DEBUG_FLAGS   := -g -O0 -DDEBUG -fsanitize=address -fno-omit-frame-pointer
 RELEASE_FLAGS := -O2
 
 SRC  := $(wildcard $(SRC_DIR)/*.c)
@@ -32,7 +33,7 @@ release: $(APP)
 	@echo "Release build complete: $(APP)"
 
 $(APP): $(OBJ)
-	$(CC) $(STD_VER) $^ -o $@
+	$(CC) $(STD_VER) $(LDFLAGS) $^ -o $@
 
 $(OBJ_DIR)/%.o: %.c
 	@mkdir -p $(dir $@)

@@ -51,16 +51,31 @@ int db_init(sqlite3 *db) {
     }
 }
 
-int db_add_todue(sqlite3 *db, const char *brief) {
+int db_add_todue(sqlite3 *db, const char *brief, const char *notes, const char *due) {
     sqlite3_stmt *stmt;
     sqlite3_prepare_v2(
         db,
-        "INSERT INTO todue (brief) VALUES (?);",
+        "INSERT INTO todue (brief, notes, due) VALUES (?, ?, ?);",
         -1,
         &stmt,
         NULL
     );
-    sqlite3_bind_text(stmt, 1, brief, -1, SQLITE_TRANSIENT);
+    if (brief) {
+        sqlite3_bind_text(stmt, 1, brief, -1, SQLITE_TRANSIENT);
+    } else {
+        sqlite3_bind_null(stmt, 1);
+    }
+    if (notes) {
+        sqlite3_bind_text(stmt, 2, notes, -1, SQLITE_TRANSIENT);
+    } else {
+        sqlite3_bind_null(stmt, 2);
+    }
+    if (due) {
+        sqlite3_bind_text(stmt, 3, due, -1, SQLITE_TRANSIENT);
+    } else {
+        sqlite3_bind_null(stmt, 3);
+    }
+
     int rc = sqlite3_step(stmt);
     if (rc != SQLITE_DONE) {
         sqlite3_finalize(stmt);

@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "todue/datetime.h"
 #include "todue/db.h"
 #include "todue/log.h"
 #include "todue/util.h"
@@ -15,14 +16,14 @@ static int cmd_help(sqlite3 **db, int argc, char **argv) {
 
     printf(
         "todo commands:\n"
-        "  help                        | Show this screen\n"
-        "  load db_path                | Load a different database\n"
-        "  reload                      | Reload the current database\n"
-        "  add brief                   | Add an item\n"
-        "  rm [id | id1,id2-id4,id5]   | Remove one or more items\n"
-        "  done id                     | Mark an item as done\n"
-        "  ls                          | List the todues\n"
-        "  quit                        | Exit the CLI\n"
+        "  help                               | Show this screen\n"
+        "  load db_path                       | Load a different database\n"
+        "  reload                             | Reload the current database\n"
+        "  add brief [-n notes] [-d due_date] | Add an item\n"
+        "  rm [id | id1,id2-id4,id5]          | Remove one or more items\n"
+        "  done id                            | Mark an item as done\n"
+        "  ls                                 | List the todues\n"
+        "  quit                               | Exit the CLI\n"
     );
     return 0;
 }
@@ -95,12 +96,51 @@ static int cmd_add(sqlite3 **db, int argc, char **argv) {
         fprintf(stderr, "usage: todo add <id>\n");
         return -1;
     }
-    if (db_add_todue(*db, argv[1])) {
+    char *brief = argv[1];
+    char *notes = NULL;
+    char *due = NULL;
+    int rc = 0;
+    
+    if (argc == 4) {
+        notes = argv[2];
+        due = malloc(sizeof(*due) * 20);
+        if (due == NULL) {
+            LOG_ERROR("Failed malloc in add command");
+            rc = -1;
+            goto cleanup;
+        }
+        relative_iso_datetime(due, 20, argv[3]);
+    }
+
+    for (int i = 2; i < 6 && i < argc && argc != 4; i += 2) {
+        if (i + 1 < argc && strcat(argv[i], "-n") == 0) {
+            notes = argv[i + 1];
+        } else if (i + 1 < argc && strcat(argv[i], "-d") == 0) {
+            due = malloc(sizeof(*due) * 20);
+            if (due == NULL) {
+                LOG_ERROR("Failed malloc in add command");
+                rc = -1;
+                goto cleanup;
+            }
+            relative_iso_datetime(due, 20, argv[i + 1]);
+        } else {
+            LOG_ERROR("One or more invalid arguments");
+            fprintf(stderr, "One or more invalid arguments\n");
+            rc = -1;
+            goto cleanup;
+        }
+    }
+
+    if (db_add_todue(*db, brief, notes, due)) {
         fprintf(stderr, "Failed to add item\n");
         check_table(*db);
-        return -1;
+        rc = -1;
+        goto cleanup;
     }
-    return 0;
+
+cleanup:
+    free(due);
+    return rc;
 }
 
 static int cmd_remove(sqlite3 **db, int argc, char **argv) {
@@ -195,21 +235,21 @@ int execute_cmd(sqlite3 **db, int argc, char **argv) {
     }
 
     int rc = 0;
-    size_t cmd_len = 0;
-    for (int i = 0; i < argc; ++i) {
-        cmd_len += strlen(argv[i]);
-    }
+    size_t cmd_len = 1 + strlen(argv[0]); // null terminator + command
+    for (int i = 1; i < argc; ++i) {
+        cmd_len += strlen(argv[i]) + 3; // +3 for surrounding quotes and a preceding space
+    } // add "Task name" "So much stuff" "today"
     char *cmd = malloc(cmd_len * sizeof(*cmd));
     if (cmd == NULL) {
         rc = -1;
         goto cleanup;
     }
     cmd[0] = '\0';
-    for (int i = 0; i < argc; ++i) {
+    strcat(cmd, argv[0]);
+    for (int i = 1; i < argc; ++i) {
+        strcat(cmd, " \"");
         strcat(cmd, argv[i]);
-        if (i < argc - 1) {
-            strcat(cmd, " ");
-        }
+        strcat(cmd, "\"");
     }
 
     for (size_t i = 0; i < sizeof(commands) / sizeof(Command); ++i) {
