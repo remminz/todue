@@ -20,6 +20,8 @@ int db_close(sqlite3 *db);
 int db_init(sqlite3 *db);
 int db_add_todue(sqlite3 *db, const char *brief, const char *notes, const char *due);
 int db_mark_done(sqlite3 *db, int id);
+int db_mark_range_done(sqlite3 *db, int start, int end);
+int db_mark_all_done(sqlite3 *db);
 int db_delete_todue(sqlite3 *db, int id);
 int db_delete_range(sqlite3 *db, int start, int end);
 int db_delete_done(sqlite3 *db);

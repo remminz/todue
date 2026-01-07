@@ -223,14 +223,56 @@ static int cmd_remove(sqlite3 **db, int argc, char **argv) {
 static int cmd_done(sqlite3 **db, int argc, char **argv) {
     if (argc != 2) {
         LOG_WARN("done usage message triggered");
-        fprintf(stderr, "usage: todue done id\n");
+        fprintf(
+            stderr,
+            "usage: todue done {id... | --all}\n"
+            "ids may be specified as:\n"
+            "  n           single id\n"
+            "  n,m,k       comma-separated list\n"
+            "  n-k         inclusive range\n"
+            "Formats may be mixed (e.g. 1,3-5,8).\n"
+        );
         return -1;
     }
-    int id = strtoull(argv[1], NULL, 10);
-    if (db_mark_done(*db, id)) {
-        fprintf(stderr, "Failed to mark item done\n");
-        check_table(*db);
-        return -1;
+
+    if (strcmp(argv[1], "--all") == 0) {
+        if (db_mark_all_done(*db)) {
+            fprintf(stderr, "Failed to mark all items done\n");
+            return -1;
+        }
+        return 0;
+    }
+    
+    char *end = NULL;
+    unsigned long id = strtoul(argv[1], &end, 10);
+    
+    while (id != 0) {
+        if (*end == '\0') {
+            db_mark_done(*db, id);
+            return 0;
+        }
+        if (*end == ',') {
+            if (db_mark_done(*db, id)) {
+                fprintf(stderr, "Failed to mark item done\n");
+                check_table(*db);
+                return -1;
+            }
+        } else if (*end == '-') {
+            ++end;
+            if (db_mark_range_done(*db, id, strtoul(end, &end, 10))) {
+                fprintf(stderr, "Failed to mark items done\n");
+                check_table(*db);
+                return -1;
+            }
+        }
+        if (*end == ',') {
+            ++end;
+            id = strtoul(end, &end, 10);
+        } else if (*end != '\0') {
+            LOG_ERROR("Invalid character '%c' in done args", *end);
+            fprintf(stderr, "Invalid character '%c' in command arguments\n", *end);
+            return -1;
+        }
     }
     return 0;
 }
