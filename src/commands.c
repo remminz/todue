@@ -11,19 +11,24 @@
 
 static int cmd_help(sqlite3 **db, int argc, char **argv) {
     (void)db;
-    (void)argc;
     (void)argv;
 
+    if (argc != 1) {
+        LOG_WARN("help usage message triggered");
+        fprintf(stderr, "usage: todue help\n");
+        return -1;
+    }
+
     printf(
-        "todo commands:\n"
-        "  help                               | Show this screen\n"
-        "  load db_path                       | Load a different database\n"
-        "  reload                             | Reload the current database\n"
-        "  add brief [-n notes] [-d due_date] | Add an item\n"
-        "  rm [id | id1,id2-id4,id5]          | Remove one or more items\n"
-        "  done id                            | Mark an item as done\n"
-        "  ls                                 | List the todues\n"
-        "  quit                               | Exit the CLI\n"
+        "todue commands:\n"
+        "  help                                | Show this screen\n"
+        "  load db_path                        | Load an existing database or create a new one\n"
+        "  reload                              | Reload the current database\n"
+        "  add brief [-n notes] [-d due_date]  | Add an item\n"
+        "  rm {id... | --done | --all}         | Remove one or more items\n"
+        "  done id                             | Mark an item as done\n"
+        "  ls                                  | List all todues\n"
+        "  quit                                | Exit the CLI\n"
     );
     return 0;
 }
@@ -36,9 +41,9 @@ static int cmd_load(sqlite3 **db, int argc, char **argv) {
         LOG_ERROR("Failed to save old path; can't continue without fallback");
         fprintf(stderr, "Encountered unexpected error\n");
         rc = -1;
-    } else if (argc < 2) {
-        LOG_ERROR("No arguments passed to load command");
-        fprintf(stderr, "usage: todo load <path>\n");
+    } else if (argc != 2) {
+        LOG_WARN("load usage message triggered");
+        fprintf(stderr, "usage: todue load db_path\n");
         rc = -1;
     } else if (db_close(*db)) {
         fprintf(stderr, "Unable to close current db '%s'\n", sqlite3_db_filename(*db, "main"));
@@ -60,12 +65,17 @@ static int cmd_load(sqlite3 **db, int argc, char **argv) {
 }
 
 static int cmd_reload(sqlite3 **db, int argc, char **argv) {
-    (void)argc;
     (void)argv;
+
+    if (argc != 1) {
+        LOG_WARN("reload usage message triggered");
+        fprintf(stderr, "usage: todue reload\n");
+        return -1;
+    }
 
      if (db == NULL) {
         LOG_ERROR("Cannot reload null database");
-        fprintf(stderr, "No db is open to reload");
+        fprintf(stderr, "No db is open to reload\n");
         return -1;
     }
 
@@ -91,9 +101,13 @@ static int cmd_reload(sqlite3 **db, int argc, char **argv) {
 }
 
 static int cmd_add(sqlite3 **db, int argc, char **argv) {
-    if (argc < 2) {
-        LOG_ERROR("No arguments passed to add command");
-        fprintf(stderr, "usage: todo add <id>\n");
+    if (argc < 2 || argc > 6) {
+        LOG_WARN("add usage message triggered");
+        fprintf(
+            stderr,
+            "usage: todue add brief [<description> <due_date>]\n"
+            "       todue add brief [-n description] [-d due_date]\n"
+        );
         return -1;
     }
     char *brief = argv[1];
@@ -144,15 +158,23 @@ cleanup:
 }
 
 static int cmd_remove(sqlite3 **db, int argc, char **argv) {
-    if (argc < 2) {
-        LOG_ERROR("No arguments passed to remove command");
-        fprintf(stderr, "usage: todo rm <id>\n");
+    if (argc != 2) {
+        LOG_WARN("remove usage message triggered");
+        fprintf(
+            stderr,
+            "usage: todue rm {id... | --done | --all}\n"
+            "ids may be specified as:\n"
+            "  n           single id\n"
+            "  n,m,k       comma-separated list\n"
+            "  n-k         inclusive range\n"
+            "Formats may be mixed (e.g. 1,3-5,8).\n"
+        );
         return -1;
     }
 
     if (strcmp(argv[1], "done") == 0) {
         if (db_delete_done(*db)) {
-            fprintf(stderr, "Failed to remove done items");
+            fprintf(stderr, "Failed to remove done items\n");
             return -1;
         }
         return 0;
@@ -175,7 +197,7 @@ static int cmd_remove(sqlite3 **db, int argc, char **argv) {
         } else if (*end == '-') {
             ++end;
             if (db_delete_range(*db, id, strtoul(end, &end, 10))) {
-                fprintf(stderr, "Failed to remove items");
+                fprintf(stderr, "Failed to remove items\n");
                 check_table(*db);
                 return -1;
             }
@@ -193,9 +215,9 @@ static int cmd_remove(sqlite3 **db, int argc, char **argv) {
 }
 
 static int cmd_done(sqlite3 **db, int argc, char **argv) {
-    if (argc < 2) {
-        LOG_ERROR("No arguments passed to done command");
-        fprintf(stderr, "usage: todo done <id>\n");
+    if (argc != 2) {
+        LOG_WARN("done usage message triggered");
+        fprintf(stderr, "usage: todue done id\n");
         return -1;
     }
     int id = strtoull(argv[1], NULL, 10);
@@ -208,8 +230,13 @@ static int cmd_done(sqlite3 **db, int argc, char **argv) {
 }
 
 static int cmd_list(sqlite3 **db, int argc, char **argv) {
-    (void)argc;
     (void)argv;
+
+    if (argc != 1) {
+        LOG_WARN("list usage message triggered");
+        fprintf(stderr, "usage: todue ls\n");
+        return -1;
+    }
 
     if (db_list(*db, print_row, NULL)) {
         fprintf(stderr, "Failed to list items\n");
