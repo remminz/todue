@@ -158,6 +158,17 @@ int db_delete_done(sqlite3 *db) {
     return 0;
 }
 
+int db_delete_all(sqlite3 *db) {
+    const char* sql = "DELETE FROM todue;";
+    int rc = sqlite3_exec(db, sql, NULL, NULL, NULL);
+
+    if (rc != SQLITE_OK) {
+        LOG_ERROR("Failed to delete items: %s", sqlite3_errmsg(db));
+        return -1;
+    }
+    return 0;
+}
+
 int db_list(sqlite3 *db, todue_callback callback, void *user_data) {
     sqlite3_stmt *stmt;
     sqlite3_prepare_v2(

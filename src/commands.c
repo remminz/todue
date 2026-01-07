@@ -172,9 +172,15 @@ static int cmd_remove(sqlite3 **db, int argc, char **argv) {
         return -1;
     }
 
-    if (strcmp(argv[1], "done") == 0) {
+    if (strcmp(argv[1], "--done") == 0) {
         if (db_delete_done(*db)) {
             fprintf(stderr, "Failed to remove done items\n");
+            return -1;
+        }
+        return 0;
+    } else if (strcmp(argv[1], "--all") == 0) {
+        if (db_delete_all(*db)) {
+            fprintf(stderr, "Failed to remove all items\n");
             return -1;
         }
         return 0;
