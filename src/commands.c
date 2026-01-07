@@ -211,7 +211,7 @@ static int cmd_remove(sqlite3 **db, int argc, char **argv) {
         if (*end == ',') {
             ++end;
             id = strtoul(end, &end, 10);
-        } else {
+        } else if (*end != '\0') {
             LOG_ERROR("Invalid character '%c' in rm args", *end);
             fprintf(stderr, "Invalid character '%c' in command arguments\n", *end);
             return -1;
