@@ -313,7 +313,7 @@ int execute_cmd(sqlite3 **db, int argc, char **argv) {
     size_t cmd_len = 1 + strlen(argv[0]); // null terminator + command
     for (int i = 1; i < argc; ++i) {
         cmd_len += strlen(argv[i]) + 3; // +3 for surrounding quotes and a preceding space
-    } // add "Task name" "So much stuff" "today"
+    }
     char *cmd = malloc(cmd_len * sizeof(*cmd));
     if (cmd == NULL) {
         rc = -1;

@@ -28,7 +28,7 @@ int db_close(sqlite3 *db) {
 }
 
 int db_init(sqlite3 *db) {
-    const char* sql =
+    const char *sql =
         "CREATE TABLE IF NOT EXISTS todue ("
         "id INTEGER PRIMARY KEY,"
         "brief TEXT NOT NULL,"
@@ -180,7 +180,7 @@ int db_delete_range(sqlite3 *db, int start, int end) {
 }
 
 int db_delete_done(sqlite3 *db) {
-    const char* sql = "DELETE FROM todue WHERE done = 1;";
+    const char *sql = "DELETE FROM todue WHERE done = 1;";
     int rc = sqlite3_exec(db, sql, NULL, NULL, NULL);
 
     if (rc != SQLITE_OK) {
@@ -191,7 +191,7 @@ int db_delete_done(sqlite3 *db) {
 }
 
 int db_delete_all(sqlite3 *db) {
-    const char* sql = "DELETE FROM todue;";
+    const char *sql = "DELETE FROM todue;";
     int rc = sqlite3_exec(db, sql, NULL, NULL, NULL);
 
     if (rc != SQLITE_OK) {

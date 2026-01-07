@@ -63,7 +63,7 @@ void print_row(
 }
 
 const char *substr(const char *src, size_t idx, size_t size) {
-    if (src == NULL || idx < 0 || size <= 0) {
+    if (src == NULL || size <= 0) {
         return NULL;
     }
 
@@ -108,7 +108,8 @@ struct tm *localtime_safe(const time_t *t, struct tm *result) {
     }
 
 #ifdef _WIN32
-    return localtime_s(result, t);
+    localtime_s(result, t);
+    return result;
 #else
     return localtime_r(t, result);
 #endif

@@ -17,5 +17,6 @@ Icon
 
 # Project specific
 todue
+todue.exe
 .todue/
 build/

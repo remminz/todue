@@ -72,11 +72,11 @@ char *relative_iso_datetime(char *buf, size_t size, char *relative) {
 
     if (strcmp("today", relative) == 0 || strcmp("tonight", relative) == 0) {
         localtime_safe(&now, &local_tm);
-        strftime(buf, size, "%Y-%m-%d 11:59:59", &local_tm);
+        strftime(buf, size, "%Y-%m-%d 23:59:59", &local_tm);
     } else if (strcmp("tomorrow", relative) == 0) {
         now += 24 * 60 * 60;
         localtime_safe(&now, &local_tm);
-        strftime(buf, size, "%Y-%m-%d 11:59:59", &local_tm);
+        strftime(buf, size, "%Y-%m-%d 23:59:59", &local_tm);
     } else {
         char *token;
         long multi;
@@ -107,7 +107,7 @@ char *relative_iso_datetime(char *buf, size_t size, char *relative) {
                 case 's':
                     now += multi * SECOND;
                     localtime_safe(&now, &local_tm);
-                    strftime(buf, size, "%Y-%m-%d %H:%M:S", &local_tm);
+                    strftime(buf, size, "%Y-%m-%d %H:%M:%S", &local_tm);
                     break;
                 case 'm':
                     now += multi * MINUTE;
