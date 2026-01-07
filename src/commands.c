@@ -101,12 +101,12 @@ static int cmd_reload(sqlite3 **db, int argc, char **argv) {
 }
 
 static int cmd_add(sqlite3 **db, int argc, char **argv) {
-    if (argc < 2 || argc > 6) {
+    if (argc < 2 || argc == 3 || argc == 5 || argc > 6) {
         LOG_WARN("add usage message triggered");
         fprintf(
             stderr,
-            "usage: todue add brief [<description> <due_date>]\n"
-            "       todue add brief [-n description] [-d due_date]\n"
+            "usage: todue add brief [<notes> <due_date>]\n"
+            "       todue add brief [-n notes] [-d due_date]\n"
         );
         return -1;
     }
@@ -114,22 +114,20 @@ static int cmd_add(sqlite3 **db, int argc, char **argv) {
     char *notes = NULL;
     char *due = NULL;
     int rc = 0;
-    
-    if (argc == 4) {
-        notes = argv[2];
-        due = malloc(sizeof(*due) * 20);
-        if (due == NULL) {
-            LOG_ERROR("Failed malloc in add command");
-            rc = -1;
-            goto cleanup;
-        }
-        relative_iso_datetime(due, 20, argv[3]);
-    }
 
-    for (int i = 2; i < 6 && i < argc && argc != 4; i += 2) {
-        if (i + 1 < argc && strcat(argv[i], "-n") == 0) {
+    for (int i = 2; i < 6 && i < argc; i += 2) {
+        if (i + 1 < argc && strcmp(argv[i], "-n") == 0) {
             notes = argv[i + 1];
-        } else if (i + 1 < argc && strcat(argv[i], "-d") == 0) {
+        } else if (i + 1 < argc && strcmp(argv[i], "-d") == 0) {
+            due = malloc(sizeof(*due) * 20);
+            if (due == NULL) {
+                LOG_ERROR("Failed malloc in add command");
+                rc = -1;
+                goto cleanup;
+            }
+            relative_iso_datetime(due, 20, argv[i + 1]);
+        } else if (i == 2 && i + 1 < argc) {
+            notes = argv[i];
             due = malloc(sizeof(*due) * 20);
             if (due == NULL) {
                 LOG_ERROR("Failed malloc in add command");
