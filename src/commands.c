@@ -125,7 +125,12 @@ static int cmd_add(sqlite3 **db, int argc, char **argv) {
                 rc = -1;
                 goto cleanup;
             }
-            relative_iso_datetime(due, 20, argv[i + 1]);
+            if (relative_iso_datetime(due, 20, argv[i + 1]) == NULL) {
+                LOG_ERROR("No valid parse from relative time string '%s'", argv[i + 1]);
+                fprintf(stderr, "Failed to parse relative time string '%s'", argv[i + 1]);
+                rc = -1;
+                goto cleanup;
+            }
         } else if (i == 2 && i + 1 < argc) {
             notes = argv[i];
             due = malloc(sizeof(*due) * 20);
@@ -134,7 +139,12 @@ static int cmd_add(sqlite3 **db, int argc, char **argv) {
                 rc = -1;
                 goto cleanup;
             }
-            relative_iso_datetime(due, 20, argv[i + 1]);
+            if (relative_iso_datetime(due, 20, argv[i + 1]) == NULL) {
+                LOG_ERROR("No valid parse from relative time string '%s'", argv[i + 1]);
+                fprintf(stderr, "Failed to parse relative time string '%s'", argv[i + 1]);
+                rc = -1;
+                goto cleanup;
+            }
         } else {
             LOG_ERROR("One or more invalid arguments");
             fprintf(stderr, "One or more invalid arguments\n");
