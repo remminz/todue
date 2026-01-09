@@ -73,7 +73,7 @@ static int parse_cmd(const char *line, int *argc, char ***argv) {
             goto cleanup;
             rc = -1;
         }
-        
+
         if (token[0] == '"' || token[0] == '\'') {
             char quote = token[0];
             char *end = token + strlen(token) - 1;
@@ -93,6 +93,7 @@ static int parse_cmd(const char *line, int *argc, char ***argv) {
             *end = '\0';
             strcat(buf, token);
             args[count] = xstrdup(buf);
+            buf[0] = '\0';
         } else {
             args[count] = xstrdup(token);
         }
