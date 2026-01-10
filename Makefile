@@ -12,13 +12,14 @@ CFLAGS        := -Wall -Wextra
 CFLAGS        += -I$(INC_DIR) -I$(TP_DIR)
 CFLAGS        += -MMD -MP
 LDFLAGS       := -fsanitize=address -fno-omit-frame-pointer
+LIBS          := -lreadline
 DEBUG_FLAGS   := -g -O0 -DDEBUG -fsanitize=address -fno-omit-frame-pointer
 RELEASE_FLAGS := -O2
 
-SRC  := $(wildcard $(SRC_DIR)/*.c)
-SRC  += $(TP_DIR)/sqlite/sqlite3.c
-OBJ  := $(SRC:%.c=$(OBJ_DIR)/%.o)
-DEPS := $(OBJ:.o=.d)
+SRC           := $(wildcard $(SRC_DIR)/*.c)
+SRC           += $(TP_DIR)/sqlite/sqlite3.c
+OBJ           := $(SRC:%.c=$(OBJ_DIR)/%.o)
+DEPS          := $(OBJ:.o=.d)
 
 .PHONY: all debug release run clean reset
 
@@ -33,7 +34,7 @@ release: $(APP)
 	@echo "Release build complete: $(APP)"
 
 $(APP): $(OBJ)
-	$(CC) $(STD_VER) $(LDFLAGS) $^ -o $@
+	$(CC) $(STD_VER) $(LDFLAGS) $(LIBS) $^ -o $@
 
 $(OBJ_DIR)/%.o: %.c
 	@mkdir -p $(dir $@)

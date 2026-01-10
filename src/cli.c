@@ -5,6 +5,9 @@
 #include <string.h>
 #include <time.h>
 
+#include <readline/readline.h>
+#include <readline/history.h>
+
 #include "todue/datetime.h"
 #include "todue/log.h"
 #include "todue/util.h"
@@ -116,12 +119,16 @@ void start_repl(sqlite3 **db) {
 
     int argc;
     char **argv;
+    char *input;
     
-    char *input = malloc(sizeof(char) * CLI_LINE_LIMIT);
-    fputs("todue> ", stdout);
-    while (fgets(input, CLI_LINE_LIMIT, stdin)) {
+    while ((input = readline("todue> ")) != NULL) {
         input[strcspn(input, "\n")] = '\0';
+        if (strnlen(input, 1) > 0) {
+            add_history(input);
+        }
+
         if (strcmp(input, "quit") == 0) {
+            free(input);
             break;
         } else if (strcmp(input, "clear") == 0) {
             clear(*db);
@@ -138,8 +145,6 @@ void start_repl(sqlite3 **db) {
             }
             free(argv);
         }
-        fputs("todue> ", stdout);
+        free(input);
     }
-    
-    free(input);
 }
