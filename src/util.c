@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "todue/datetime.h"
 #include "todue/db.h"
 #include "todue/log.h"
 
@@ -23,6 +24,7 @@
 #define LIGHT_GRAY "\033[38;5;253m"
 #define GRAY "\033[38;5;250m"
 
+#define NO_SECONDS 16
 
 void print_row(
     int         id,
@@ -51,8 +53,8 @@ void print_row(
         printf(" %s%.*s%s\n", DIM, RIGHT_WIDTH, "No notes", END_BOLD_DIM);
     }
 
-    if (due) {
-        printf("   %sdue: %-*s%s |", LIGHT_GRAY ITALIC, LEFT_WIDTH, due, END_ITALIC);
+    if (due && is_valid_datetime(due)) {
+        printf("   %sdue: %-*.*s%s |", LIGHT_GRAY ITALIC, LEFT_WIDTH, NO_SECONDS, due, END_ITALIC);
     } else {
         printf("\t%s%-*s%s |", DIM, LEFT_WIDTH, "No due date", END_BOLD_DIM);
     }
