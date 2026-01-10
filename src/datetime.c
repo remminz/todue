@@ -66,7 +66,10 @@ char *relative_iso_datetime(char *buf, size_t size, char *relative) {
     if (relative == NULL || relative[0] == '\0') {
         LOG_ERROR("Empty relative datetime string as argument");
         return NULL;
+    } else if (is_valid_datetime(buf)) {
+        return buf;
     }
+    
     time_t now = time(NULL);
     struct tm local_tm;
 

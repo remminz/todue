@@ -127,7 +127,7 @@ static int cmd_add(sqlite3 **db, int argc, char **argv) {
             }
             if (relative_iso_datetime(due, 20, argv[i + 1]) == NULL) {
                 LOG_ERROR("No valid parse from relative time string '%s'", argv[i + 1]);
-                fprintf(stderr, "Failed to parse relative time string '%s'", argv[i + 1]);
+                fprintf(stderr, "Failed to parse relative time string '%s'\n", argv[i + 1]);
                 rc = -1;
                 goto cleanup;
             }
@@ -141,7 +141,7 @@ static int cmd_add(sqlite3 **db, int argc, char **argv) {
             }
             if (relative_iso_datetime(due, 20, argv[i + 1]) == NULL) {
                 LOG_ERROR("No valid parse from relative time string '%s'", argv[i + 1]);
-                fprintf(stderr, "Failed to parse relative time string '%s'", argv[i + 1]);
+                fprintf(stderr, "Failed to parse relative time string '%s'\n", argv[i + 1]);
                 rc = -1;
                 goto cleanup;
             }
