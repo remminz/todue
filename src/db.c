@@ -60,17 +60,17 @@ int db_add_todue(sqlite3 *db, const char *brief, const char *notes, const char *
         &stmt,
         NULL
     );
-    if (brief) {
+    if (brief && brief[0] != '\0') {
         sqlite3_bind_text(stmt, 1, brief, -1, SQLITE_TRANSIENT);
     } else {
         sqlite3_bind_null(stmt, 1);
     }
-    if (notes) {
+    if (notes && notes[0] != '\0') {
         sqlite3_bind_text(stmt, 2, notes, -1, SQLITE_TRANSIENT);
     } else {
         sqlite3_bind_null(stmt, 2);
     }
-    if (due) {
+    if (due && due[0] != '\0') {
         sqlite3_bind_text(stmt, 3, due, -1, SQLITE_TRANSIENT);
     } else {
         sqlite3_bind_null(stmt, 3);

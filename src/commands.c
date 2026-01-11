@@ -111,6 +111,10 @@ static int cmd_add(sqlite3 **db, int argc, char **argv) {
         return -1;
     }
     char *brief = argv[1];
+    if (brief[0] == '\0') {
+        fprintf(stderr, "Brief cannot be empty\n");
+        return -1;
+    }
     char *notes = NULL;
     char *due = NULL;
     int rc = 0;
