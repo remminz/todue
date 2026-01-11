@@ -20,38 +20,76 @@ static int secondable(char c1, char c2) {
         c1 == 'w';
 }
 
-int is_valid_datetime(const char *s) {
-    if (strlen(s) != 19) return 0;
+bool is_valid_date(const char *s) {
+    if (strlen(s) < 10) return false;
 
-    // YYYY-MM-DD HH:MM:SS
+    // "YYYY-MM-DD"
     if (!(isdigit(s[0]) && isdigit(s[1]) && isdigit(s[2]) && isdigit(s[3]) &&
           s[4] == '-' &&
           isdigit(s[5]) && isdigit(s[6]) &&
           s[7] == '-' &&
-          isdigit(s[8]) && isdigit(s[9]) &&
-          s[10] == ' ' &&
-          isdigit(s[11]) && isdigit(s[12]) &&
-          s[13] == ':' &&
-          isdigit(s[14]) && isdigit(s[15]) &&
-          s[16] == ':' &&
-          isdigit(s[17]) && isdigit(s[18]))) {
-        return 0;
+          isdigit(s[8]) && isdigit(s[9]))) {
+        return false;
     }
 
-    // check numeric ranges
     int month = to_int(&s[5]);
     int day   = to_int(&s[8]);
-    int hour  = to_int(&s[11]);
-    int min   = to_int(&s[14]);
-    int sec   = to_int(&s[17]);
 
-    if (month < 1 || month > 12) return 0;
-    if (day   < 1 || day   > 31) return 0;
-    if (hour  > 23) return 0;
-    if (min   > 59) return 0;
-    if (sec   > 59) return 0;
+    if (month < 1 || month > 12) return false;
+    if (day   < 1 || day   > 31) return false;
 
-    return 1;
+    return true;
+}
+
+bool is_valid_time(const char *s) {
+    if (strlen(s) < 8) return false;
+
+    // "HH:MM:SS"
+    if (!(isdigit(s[0]) && isdigit(s[1]) &&
+          s[2] == ':' &&
+          isdigit(s[3]) && isdigit(s[4]) &&
+          s[5] == ':' &&
+          isdigit(s[6]) && isdigit(s[7]))) {
+        return false;
+    }
+
+    int hour = to_int(&s[0]);
+    int min  = to_int(&s[3]);
+    int sec  = to_int(&s[6]);
+
+    if (hour > 23) return false;
+    if (min  > 59) return false;
+    if (sec  > 59) return false;
+
+    return true;
+}
+
+bool is_valid_short_time(const char *s) {
+    if (strlen(s) < 5) return false;
+
+    // "HH:MM"
+    if (!(isdigit(s[0]) && isdigit(s[1]) &&
+          s[2] == ':' &&
+          isdigit(s[3]) && isdigit(s[4]))) {
+        return false;
+    }
+
+    int hour = to_int(&s[0]);
+    int min  = to_int(&s[3]);
+
+    if (hour > 23) return false;
+    if (min  > 59) return false;
+
+    return true;
+}
+
+bool is_valid_datetime(const char *s) {
+    if (strnlen(s, 20) != 19) return false;
+
+    // "YYYY-MM-DD HH:MM:SS"
+    if (!(is_valid_date(s) && s[10] == ' ' && is_valid_time(&s[11]))) return false;
+
+    return true;
 }
 
 char *current_iso_datetime(char *buf, size_t size) {
@@ -66,14 +104,24 @@ char *relative_iso_datetime(char *buf, size_t size, char *relative) {
     if (relative == NULL || relative[0] == '\0') {
         LOG_ERROR("Empty relative datetime string as argument");
         return NULL;
-    } else if (is_valid_datetime(buf)) {
+    } else if (is_valid_datetime(relative)) {
         return buf;
     }
-    
+
     time_t now = time(NULL);
     struct tm local_tm;
 
-    if (strcmp("today", relative) == 0 || strcmp("tonight", relative) == 0) {
+    if (is_valid_date(relative)) {
+        snprintf(buf, size, "%s 23:59:59", relative);
+    } else if (is_valid_time(relative)) {
+        localtime_safe(&now, &local_tm);
+        strftime(buf, size, "%Y-%m-%d ", &local_tm);
+        strncat(buf, relative, max(0, size - 11));
+    } else if (is_valid_short_time(relative)) {
+        localtime_safe(&now, &local_tm);
+        strftime(buf, size, "%Y-%m-%d ", &local_tm);
+        snprintf(buf + 11, max(0, size - 11), "%s:59", relative);
+    } else if (strcmp("today", relative) == 0 || strcmp("tonight", relative) == 0) {
         localtime_safe(&now, &local_tm);
         strftime(buf, size, "%Y-%m-%d 23:59:59", &local_tm);
     } else if (strcmp("tomorrow", relative) == 0) {

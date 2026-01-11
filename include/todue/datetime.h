@@ -1,6 +1,7 @@
 #ifndef DATETIME_H
 #define DATETIME_H
 
+#include <stdbool.h>
 #include <stddef.h>
 
 typedef enum {
@@ -13,7 +14,10 @@ typedef enum {
     YEAR   = MONTH * 12,
 } TimeUnit;
 
-int is_valid_datetime(const char *s);
+bool is_valid_date(const char *s);
+bool is_valid_time(const char *s);
+bool is_valid_short_time(const char *s);
+bool is_valid_datetime(const char *s);
 char *current_iso_datetime(char *buf, size_t size);
 char *relative_iso_datetime(char *buf, size_t size, char *relative);
 
