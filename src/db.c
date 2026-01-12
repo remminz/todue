@@ -86,6 +86,44 @@ int db_add_todue(sqlite3 *db, const char *brief, const char *notes, const char *
     return 0;
 }
 
+int db_edit_todue(sqlite3 *db, int id, const char *brief, const char *notes, const char *due) {
+    sqlite3_stmt *stmt;
+    const char *sql =
+        "UPDATE todue SET "
+        "brief = COALESCE(?, brief),"
+        "notes = COALESCE(?, notes),"
+        "due = COALESCE(?, due) "
+        "WHERE id = ?;";
+
+    sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+
+    if (brief && brief[0] != '\0') {
+        sqlite3_bind_text(stmt, 1, brief, -1, SQLITE_TRANSIENT);
+    } else {
+        sqlite3_bind_null(stmt, 1);
+    }
+    if (notes && notes[0] != '\0') {
+        sqlite3_bind_text(stmt, 2, notes, -1, SQLITE_TRANSIENT);
+    } else {
+        sqlite3_bind_null(stmt, 2);
+    }
+    if (due && due[0] != '\0') {
+        sqlite3_bind_text(stmt, 3, due, -1, SQLITE_TRANSIENT);
+    } else {
+        sqlite3_bind_null(stmt, 3);
+    }
+    sqlite3_bind_int(stmt, 4, id);
+
+    int rc = sqlite3_step(stmt);
+    if (rc != SQLITE_DONE) {
+        sqlite3_finalize(stmt);
+        LOG_ERROR("Failed to edit item: %s", sqlite3_errmsg(db));
+        return -1;
+    }
+    sqlite3_finalize(stmt);
+    return 0;
+}
+
 int db_mark_done(sqlite3 *db, int id) {
     sqlite3_stmt *stmt;
     sqlite3_prepare_v2(

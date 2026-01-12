@@ -169,6 +169,61 @@ cleanup:
     return rc;
 }
 
+static int cmd_edit(sqlite3 **db, int argc, char **argv) {
+    if (argc < 4 || argc % 2 != 0 || argc > 8) {
+        LOG_WARN("edit usage message triggered");
+        fprintf(stderr, "usage: todue edit <id> [-b <brief>] [-n <notes>] [-d <due_date>]\n");
+        return -1;
+    }
+
+    int rc = 0;
+    unsigned long id = strtoul(argv[1], NULL, 10);
+    if (id == 0) {
+        LOG_ERROR("id is zero");
+        return -1;
+    }
+
+    char *brief = NULL;
+    char *notes = NULL;
+    char *due = NULL;
+
+    for (int i = 2; i < argc && i < 8; i += 2) {
+        if (argv[i][0] != '-' || strnlen(argv[i], 3) != 2) {
+            LOG_ERROR("Invalid argument '%s'", argv[i]);
+            fprintf(stderr, "Invalid argument '%s'\n", argv[i]);
+            rc = -1;
+            goto cleanup;
+        }
+        switch (argv[i][1]) {
+            case 'b':
+                brief = argv[i + 1];
+                break;
+            case 'n':
+                notes = argv[i + 1];
+                break;
+            case 'd':
+                due = malloc(20 * sizeof(*due));
+                if (due == NULL) {
+                    LOG_ERROR("Failed malloc in edit");
+                    rc = -1;
+                    goto cleanup;
+                }
+                relative_iso_datetime(due, 20, argv[i + 1]);
+                break;
+        }
+    }
+
+    if (db_edit_todue(*db, id, brief, notes, due)) {
+        LOG_ERROR("Failed to edit item");
+        fprintf(stderr, "Failed to edit item\n");
+        rc = -1;
+    }
+
+cleanup:
+    free(due);
+    return rc;
+}
+
 static int cmd_remove(sqlite3 **db, int argc, char **argv) {
     if (argc != 2) {
         LOG_WARN("remove usage message triggered");
@@ -311,6 +366,7 @@ const Command commands[] = {
     {"load", cmd_load},
     {"reload", cmd_reload},
     {"add", cmd_add},
+    {"edit", cmd_edit},
     {"rm", cmd_remove},
     {"done", cmd_done},
     {"ls", cmd_list},
