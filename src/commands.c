@@ -185,10 +185,11 @@ static int cmd_edit(sqlite3 **db, int argc, char **argv) {
 
     char *brief = NULL;
     char *notes = NULL;
+    bool append = false;
     char *due = NULL;
 
     for (int i = 2; i < argc && i < 8; i += 2) {
-        if (argv[i][0] != '-' || strnlen(argv[i], 3) != 2) {
+        if (argv[i][0] != '-' || strnlen(argv[i], 2) < 2) {
             LOG_ERROR("Invalid argument '%s'", argv[i]);
             fprintf(stderr, "Invalid argument '%s'\n", argv[i]);
             rc = -1;
@@ -200,6 +201,13 @@ static int cmd_edit(sqlite3 **db, int argc, char **argv) {
                 break;
             case 'n':
                 notes = argv[i + 1];
+                if (argv[i][2] != '\0' && argv[i][2] != 'a') {
+                    LOG_ERROR("Invalid argument '%s'", argv[i]);
+                    fprintf(stderr, "Invalid argument '%s'\n", argv[i]);
+                    rc = -1;
+                    goto cleanup;
+                }
+                append = (argv[i][2] == 'a');
                 break;
             case 'd':
                 due = malloc(20 * sizeof(*due));
@@ -213,7 +221,7 @@ static int cmd_edit(sqlite3 **db, int argc, char **argv) {
         }
     }
 
-    if (db_edit_todue(*db, id, brief, notes, due)) {
+    if (db_edit_todue(*db, id, brief, notes, append, due)) {
         LOG_ERROR("Failed to edit item");
         fprintf(stderr, "Failed to edit item\n");
         rc = -1;

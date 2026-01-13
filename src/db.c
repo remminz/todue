@@ -86,14 +86,24 @@ int db_add_todue(sqlite3 *db, const char *brief, const char *notes, const char *
     return 0;
 }
 
-int db_edit_todue(sqlite3 *db, int id, const char *brief, const char *notes, const char *due) {
+int db_edit_todue(sqlite3 *db, int id, const char *brief, const char *notes, bool note_append, const char *due) {
     sqlite3_stmt *stmt;
-    const char *sql =
-        "UPDATE todue SET "
-        "brief = COALESCE(?, brief),"
-        "notes = COALESCE(?, notes),"
-        "due = COALESCE(?, due) "
-        "WHERE id = ?;";
+    const char *sql;
+    if (note_append && notes) {
+        sql =
+            "UPDATE todue SET "
+            "brief = COALESCE(?, brief),"
+            "notes = CONCAT(notes, ?),"
+            "due = COALESCE(?, due) "
+            "WHERE id = ?;";
+    } else {
+        sql =
+            "UPDATE todue SET "
+            "brief = COALESCE(?, brief),"
+            "notes = COALESCE(?, notes),"
+            "due = COALESCE(?, due) "
+            "WHERE id = ?;";
+    }
 
     sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
