@@ -78,11 +78,10 @@ static int parse_cmd(const char *line, int *argc, char ***argv) {
         }
 
         if (token[0] == '"' || token[0] == '\'') {
-            char quote = token[0];
             char *end = token + strlen(token) - 1;
             ++token;
-            
-            while (*end != quote) {
+
+            while (*end != token[0] || end == token) {
                 strcat(buf, token);
                 strcat(buf, " ");
                 token = strtok_r(NULL, " ", &rest);
