@@ -361,11 +361,14 @@ static int cmd_list(sqlite3 **db, int argc, char **argv) {
         return -1;
     }
 
-    if (db_list(*db, print_row, NULL)) {
+    FILE *out = openPager();
+    if (db_list(*db, print_row, out)) {
         fprintf(stderr, "Failed to list items\n");
         check_table(*db);
+        closePager(out);
         return -1;
     }
+    closePager(out);
     return 0;
 }
 

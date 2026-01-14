@@ -2,9 +2,21 @@
 
 #include <ctype.h>
 #include <limits.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef _WIN32
+    #include <io.h>
+    #define todue_isatty _isatty
+    #define todue_popen _popen
+    #define todue_pclose _pclose
+    #define todue_stdout_fd() _fileno(stdout)
+#else
+    #include <unistd.h>
+    #define todue_isatty isatty
+    #define todue_popen popen
+    #define todue_pclose pclose
+    #define todue_stdout_fd() STDOUT_FILENO
+#endif
 
 #include "todue/datetime.h"
 #include "todue/db.h"
@@ -26,6 +38,32 @@
 
 #define NO_SECONDS 16
 
+FILE *openPager(void) {
+    if (!todue_isatty(todue_stdout_fd())) {
+        return stdout;
+    }
+
+    const char *pager = getenv("PAGER");
+#ifdef _WIN32
+    if (!pager) {
+        pager = "more";
+    }
+#else
+    if (!pager) {
+        pager = "less -FRX";
+    }
+#endif
+
+    FILE *fp = todue_popen(pager, "w");
+    return fp ? fp : stdout;
+}
+
+void closePager(FILE *fp) {
+    if (fp != stdout) {
+        todue_pclose(fp);
+    }
+}
+
 void print_row(
     int         id,
     const char *brief,
@@ -35,33 +73,33 @@ void print_row(
     int         done,
     void       *user_data)
 {
-    (void)user_data;
+    FILE *out = user_data;
     const int LEFT_WIDTH = 30;
     const int RIGHT_WIDTH = 80;
 
-    printf("%s%3d%s [%c]%s ", BOLD, id, END_ITALIC, done ? 'X' : ' ', END_BOLD_DIM);
+    fprintf(out, "%s%3d%s [%c]%s ", BOLD, id, END_ITALIC, done ? 'X' : ' ', END_BOLD_DIM);
     if (done) {
-        fputs(STRIKETHROUGH DIM, stdout);
+        fputs(STRIKETHROUGH DIM, out);
     } else {
-        fputs(WHITE BOLD, stdout);
+        fputs(WHITE BOLD, out);
     }
-    printf("%-*.*s%s |", LEFT_WIDTH, LEFT_WIDTH, brief, END_ALL);
+    fprintf(out, "%-*.*s%s |", LEFT_WIDTH, LEFT_WIDTH, brief, END_ALL);
 
     if (notes) {
-        printf(" %.*s\n", RIGHT_WIDTH, notes);
+        fprintf(out, " %.*s\n", RIGHT_WIDTH, notes);
     } else {
-        printf(" %s%.*s%s\n", DIM, RIGHT_WIDTH, "No notes", END_BOLD_DIM);
+        fprintf(out, " %s%.*s%s\n", DIM, RIGHT_WIDTH, "No notes", END_BOLD_DIM);
     }
 
     if (due && is_valid_datetime(due)) {
-        printf("   %sdue: %-*.*s%s |", LIGHT_GRAY ITALIC, LEFT_WIDTH, NO_SECONDS, due, END_ITALIC);
+        fprintf(out, "   %sdue: %-*.*s%s |", LIGHT_GRAY ITALIC, LEFT_WIDTH, NO_SECONDS, due, END_ITALIC);
     } else {
-        printf("\t%s%-*s%s |", DIM, LEFT_WIDTH, "No due date", END_BOLD_DIM);
+        fprintf(out, "\t%s%-*s%s |", DIM, LEFT_WIDTH, "No due date", END_BOLD_DIM);
     }
 
-    printf("%s created: %s%s\n", GRAY ITALIC, created, END_ALL);
+    fprintf(out, "%s created: %s%s\n", GRAY ITALIC, created, END_ALL);
 
-    putchar('\n');
+    fputc('\n', out);
 }
 
 const char *substr(const char *src, size_t idx, size_t size) {

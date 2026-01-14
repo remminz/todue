@@ -4,6 +4,7 @@
 #include "sqlite/sqlite3.h"
 
 #include <stddef.h>
+#include <stdio.h>
 #include <time.h>
 
 // gcc and clang only
@@ -21,6 +22,8 @@
     _a < _b ? _a : _b;       \
 })
 
+FILE *openPager(void);
+void closePager(FILE *fp);
 void print_row(
     int         id,
     const char *brief,
