@@ -7,6 +7,7 @@
 #include "todue/datetime.h"
 #include "todue/db.h"
 #include "todue/log.h"
+#include "todue/platform.h"
 #include "todue/util.h"
 
 static int cmd_help(sqlite3 **db, int argc, char **argv) {
@@ -35,7 +36,7 @@ static int cmd_help(sqlite3 **db, int argc, char **argv) {
 
 static int cmd_load(sqlite3 **db, int argc, char **argv) {
     int rc = 0;
-    char *old_path = xstrdup(sqlite3_db_filename(*db, "main"));
+    char *old_path = todue_strdup(sqlite3_db_filename(*db, "main"));
 
     if (old_path == NULL) {
         LOG_ERROR("Failed to save old path; can't continue without fallback");
@@ -80,7 +81,7 @@ static int cmd_reload(sqlite3 **db, int argc, char **argv) {
     }
 
     int rc = 0;
-    char *path = xstrdup(sqlite3_db_filename(*db, "main"));
+    char *path = todue_strdup(sqlite3_db_filename(*db, "main"));
 
     if (db_close(*db)) {
         LOG_ERROR("Failed at close stage of reload");

@@ -5,41 +5,13 @@
 #include <errno.h>
 #include <stdio.h>
 
-#ifdef _WIN32
-    #include <direct.h>
-#else
-    #include <sys/stat.h>
-    #include <unistd.h>
-#endif
+#include "todue/platform.h"
 
 #define TODUE_DIR ".todue"
 #define PATH_SIZE 1024
 
-static int create_dir(const char *path) {
-#ifdef _WIN32
-    if (_mkdir(path) == 0)
-        return 0;
-    if (errno == EEXIST)
-        return 0;
-#else
-    if (mkdir(path, 0700) == 0)
-        return 0;
-    if (errno == EEXIST)
-        return 0;
-#endif
-    return -1;
-}
-
 int get_todue_dir(char *buf, size_t size) {
-    const char *home;
-
-#ifdef DEBUG
-    home = ".";
-#elif defined(_WIN32)
-    home = getenv("USERPROFILE");
-#else
-    home = getenv("HOME");
-#endif
+    const char *home = todue_get_home();
 
     if (home == NULL || buf == NULL || size <= 0)
         return -1;
@@ -52,14 +24,14 @@ int get_todue_dir(char *buf, size_t size) {
 
 int ensure_todue_dir(void) {
 #ifdef DEBUG
-    return create_dir(TODUE_DIR);
+    return todue_mkdir(TODUE_DIR);
 #else
     char path[PATH_SIZE];
 
     if (get_todue_dir(path, sizeof(path)))
         return -1;
 
-    return create_dir(path);
+    return todue_mkdir(path);
 #endif
 }
 

@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include <time.h>
 
+#include "todue/platform.h"
 #include "todue/util.h"
 
 static LogLevel current_level = LOG_INFO;
@@ -50,7 +51,7 @@ void log_msg(
     
     time_t now = time(NULL);
     struct tm timestamp;
-    localtime_safe(&now, &timestamp);
+    todue_localtime(&now, &timestamp);
 
     if (log_fp == NULL) {
         log_fp = stderr;

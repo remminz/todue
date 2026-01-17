@@ -35,8 +35,6 @@ void print_row(
 );
 const char *substr(const char *source, size_t offset, size_t size);
 void skip_space(char **str);
-char *xstrdup(const char *str); // strdup wrapper since strdup has limited availability
-struct tm *localtime_safe(const time_t *t, struct tm *result); // cross-platform thread-safe localtime wrapper
 void check_table(sqlite3 *db);
 
 #endif // UTIL_H

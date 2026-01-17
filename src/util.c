@@ -4,23 +4,11 @@
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef _WIN32
-    #include <io.h>
-    #define todue_isatty _isatty
-    #define todue_popen _popen
-    #define todue_pclose _pclose
-    #define todue_stdout_fd() _fileno(stdout)
-#else
-    #include <unistd.h>
-    #define todue_isatty isatty
-    #define todue_popen popen
-    #define todue_pclose pclose
-    #define todue_stdout_fd() STDOUT_FILENO
-#endif
 
 #include "todue/datetime.h"
 #include "todue/db.h"
 #include "todue/log.h"
+#include "todue/platform.h"
 
 // ANSI Sequences
 #define BOLD "\033[1m"
@@ -39,22 +27,12 @@
 #define NO_SECONDS 16
 
 FILE *openPager(void) {
-    if (!todue_isatty(todue_stdout_fd())) {
+    if (!todue_isatty_stdout()) {
         return stdout;
     }
-
-    const char *pager = getenv("PAGER");
-#ifdef _WIN32
-    if (!pager) {
-        pager = "more";
-    }
-#else
-    if (!pager) {
-        pager = "less -FRX";
-    }
-#endif
-
+    const char *pager = todue_get_pager();
     FILE *fp = todue_popen(pager, "w");
+
     return fp ? fp : stdout;
 }
 
@@ -112,47 +90,21 @@ const char *substr(const char *src, size_t idx, size_t size) {
         size = src_len - idx;
     }
 
-    char *substring = malloc(sizeof(char) * (size + 1));
-    if (substring == NULL) {
+    char *str = malloc(sizeof(char) * (size + 1));
+    if (str == NULL) {
         return NULL;
     }
 
-    strncpy(substring, src + idx, size);
-    substring[size] = '\0';
+    strncpy(str, src + idx, size);
+    str[size] = '\0';
 
-    return substring;
+    return str;
 }
 
 void skip_space(char **str) {
     while (**str && isspace(**str)) {
         ++(*str);
     }
-}
-
-char *xstrdup(const char *str) {
-#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
-    return strdup(s);
-#else
-    size_t len = strlen(str) + 1;
-    char *p = malloc(len);
-    if (p) {
-        memcpy(p, str, len);
-    }
-    return p;
-#endif
-}
-
-struct tm *localtime_safe(const time_t *t, struct tm *result) {
-    if (t == NULL || result == NULL) {
-        return NULL;
-    }
-
-#ifdef _WIN32
-    localtime_s(result, t);
-    return result;
-#else
-    return localtime_r(t, result);
-#endif
 }
 
 void check_table(sqlite3 *db) {
