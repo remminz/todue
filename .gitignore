@@ -16,7 +16,7 @@ Icon
 *.db-wal
 
 # Project specific
-todue
-todue.exe
+/todue
+/todue.exe
 .todue/
 build/
