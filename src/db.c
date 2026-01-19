@@ -11,7 +11,7 @@ int db_open(sqlite3 **db, const char *path) {
         LOG_ERROR("Failed to open database: %s", sqlite3_errmsg(*db));
         return -1;
     } else {
-        LOG_INFO("Successfully opened database");
+        LOG_INFO("Successfully opened database '%s'", path);
         return 0;
     }
 }
@@ -51,7 +51,9 @@ int db_init(sqlite3 *db) {
     }
 }
 
-int db_add_todue(sqlite3 *db, const char *brief, const char *notes, const char *due) {
+int db_add_todue(sqlite3 *db, const char *brief,
+                 const char *notes, const char *due)
+{
     sqlite3_stmt *stmt;
     sqlite3_prepare_v2(
         db,
@@ -60,6 +62,7 @@ int db_add_todue(sqlite3 *db, const char *brief, const char *notes, const char *
         &stmt,
         NULL
     );
+
     if (brief && brief[0] != '\0') {
         sqlite3_bind_text(stmt, 1, brief, -1, SQLITE_TRANSIENT);
     } else {
@@ -86,10 +89,12 @@ int db_add_todue(sqlite3 *db, const char *brief, const char *notes, const char *
     return 0;
 }
 
-int db_edit_todue(sqlite3 *db, int id, const char *brief, const char *notes, bool note_append, const char *due) {
+int db_edit_todue(sqlite3 *db, int id, const char *brief,
+                  const char *notes, bool append_note, const char *due)
+{
     sqlite3_stmt *stmt;
     const char *sql;
-    if (note_append && notes) {
+    if (append_note && notes) {
         sql =
             "UPDATE todue SET "
             "brief = COALESCE(?, brief),"
@@ -104,7 +109,6 @@ int db_edit_todue(sqlite3 *db, int id, const char *brief, const char *notes, boo
             "due = COALESCE(?, due) "
             "WHERE id = ?;";
     }
-
     sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
     if (brief && brief[0] != '\0') {
@@ -144,10 +148,11 @@ int db_mark_done(sqlite3 *db, int id) {
         NULL
     );
     sqlite3_bind_int(stmt, 1, id);
+
     int rc = sqlite3_step(stmt);
     if (rc != SQLITE_DONE) {
         sqlite3_finalize(stmt);
-        LOG_ERROR("Failed to mark done: %s", sqlite3_errmsg(db));
+        LOG_ERROR("Failed to mark item done: %s", sqlite3_errmsg(db));
         return -1;
     }
     sqlite3_finalize(stmt);
@@ -165,10 +170,11 @@ int db_mark_range_done(sqlite3 *db, int start, int end) {
     );
     sqlite3_bind_int(stmt, 1, start);
     sqlite3_bind_int(stmt, 2, end);
+
     int rc = sqlite3_step(stmt);
     if (rc != SQLITE_DONE) {
         sqlite3_finalize(stmt);
-        LOG_ERROR("Failed to mark range of items done: %s", sqlite3_errmsg(db));
+        LOG_ERROR("Failed to mark items done: %s", sqlite3_errmsg(db));
         return -1;
     }
     sqlite3_finalize(stmt);
@@ -177,8 +183,8 @@ int db_mark_range_done(sqlite3 *db, int start, int end) {
 
 int db_mark_all_done(sqlite3 *db) {
     const char *sql = "UPDATE todue SET done = 1;";
+    
     int rc = sqlite3_exec(db, sql, NULL, NULL, NULL);
-
     if (rc != SQLITE_OK) {
         LOG_ERROR("Failed to mark all done: %s", sqlite3_errmsg(db));
         return -1;
@@ -196,6 +202,7 @@ int db_delete_todue(sqlite3 *db, int id) {
         NULL
     );
     sqlite3_bind_int(stmt, 1, id);
+
     int rc = sqlite3_step(stmt);
     if (rc != SQLITE_DONE) {
         sqlite3_finalize(stmt);
@@ -217,6 +224,7 @@ int db_delete_range(sqlite3 *db, int start, int end) {
     );
     sqlite3_bind_int(stmt, 1, start);
     sqlite3_bind_int(stmt, 2, end);
+
     int rc = sqlite3_step(stmt);
     if (rc != SQLITE_DONE) {
         sqlite3_finalize(stmt);
@@ -229,8 +237,8 @@ int db_delete_range(sqlite3 *db, int start, int end) {
 
 int db_delete_done(sqlite3 *db) {
     const char *sql = "DELETE FROM todue WHERE done = 1;";
+    
     int rc = sqlite3_exec(db, sql, NULL, NULL, NULL);
-
     if (rc != SQLITE_OK) {
         LOG_ERROR("Failed to delete items: %s", sqlite3_errmsg(db));
         return -1;
@@ -240,8 +248,8 @@ int db_delete_done(sqlite3 *db) {
 
 int db_delete_all(sqlite3 *db) {
     const char *sql = "DELETE FROM todue;";
+    
     int rc = sqlite3_exec(db, sql, NULL, NULL, NULL);
-
     if (rc != SQLITE_OK) {
         LOG_ERROR("Failed to delete items: %s", sqlite3_errmsg(db));
         return -1;
@@ -258,6 +266,7 @@ int db_list(sqlite3 *db, todue_callback callback, void *user_data) {
         &stmt,
         NULL
     );
+
     int rc;
     while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
         int id = sqlite3_column_int(stmt, 0);
@@ -268,6 +277,7 @@ int db_list(sqlite3 *db, todue_callback callback, void *user_data) {
         int done = sqlite3_column_int(stmt, 5);
         callback(id, brief, notes, created, due, done, user_data);
     }
+    
     if (rc != SQLITE_DONE) {
         sqlite3_finalize(stmt);
         LOG_ERROR("Failed to list database: %s", sqlite3_errmsg(db));
@@ -278,5 +288,6 @@ int db_list(sqlite3 *db, todue_callback callback, void *user_data) {
 }
 
 bool no_such_table(sqlite3 *db) {
-    return (sqlite3_errcode(db) == SQLITE_ERROR && strncmp(sqlite3_errmsg(db), "no such table", 13) == 0);
+    return (sqlite3_errcode(db) == SQLITE_ERROR &&
+            strncmp(sqlite3_errmsg(db), "no such table", 13) == 0);
 }

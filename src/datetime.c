@@ -14,11 +14,11 @@ static int to_int(const char *s) {
 }
 
 static int secondable(char c1, char c2) {
-    return c1 == 's' ||
-        (c1 == 'm' && c2 == 'i') ||
-        c1 == 'h' ||
-        c1 == 'd' ||
-        c1 == 'w';
+    return (c1 == 's' ||
+            (c1 == 'm' && c2 == 'i') ||
+            c1 == 'h' ||
+            c1 == 'd' ||
+            c1 == 'w');
 }
 
 bool is_valid_date(const char *s) {
@@ -29,7 +29,8 @@ bool is_valid_date(const char *s) {
           s[4] == '-' &&
           isdigit(s[5]) && isdigit(s[6]) &&
           s[7] == '-' &&
-          isdigit(s[8]) && isdigit(s[9]))) {
+          isdigit(s[8]) && isdigit(s[9])))
+    {
         return false;
     }
 
@@ -43,14 +44,15 @@ bool is_valid_date(const char *s) {
 }
 
 bool is_valid_time(const char *s) {
-    if (strlen(s) < 8) return false;
+    if (strnlen(s, 8) < 8) return false;
 
     // "HH:MM:SS"
     if (!(isdigit(s[0]) && isdigit(s[1]) &&
           s[2] == ':' &&
           isdigit(s[3]) && isdigit(s[4]) &&
           s[5] == ':' &&
-          isdigit(s[6]) && isdigit(s[7]))) {
+          isdigit(s[6]) && isdigit(s[7])))
+    {
         return false;
     }
 
@@ -66,12 +68,13 @@ bool is_valid_time(const char *s) {
 }
 
 bool is_valid_short_time(const char *s) {
-    if (strlen(s) < 5) return false;
+    if (strnlen(s, 5) < 5) return false;
 
     // "HH:MM"
     if (!(isdigit(s[0]) && isdigit(s[1]) &&
           s[2] == ':' &&
-          isdigit(s[3]) && isdigit(s[4]))) {
+          isdigit(s[3]) && isdigit(s[4])))
+    {
         return false;
     }
 
@@ -88,9 +91,7 @@ bool is_valid_datetime(const char *s) {
     if (strnlen(s, 20) != 19) return false;
 
     // "YYYY-MM-DD HH:MM:SS"
-    if (!(is_valid_date(s) && s[10] == ' ' && is_valid_time(&s[11]))) return false;
-
-    return true;
+    return (is_valid_date(s) && s[10] == ' ' && is_valid_time(&s[11]));
 }
 
 char *current_iso_datetime(char *buf, size_t size) {
@@ -122,7 +123,9 @@ char *relative_iso_datetime(char *buf, size_t size, char *relative) {
         todue_localtime(&now, &local_tm);
         strftime(buf, size, "%Y-%m-%d ", &local_tm);
         snprintf(buf + 11, max(0, size - 11), "%s:59", relative);
-    } else if (strcmp("today", relative) == 0 || strcmp("tonight", relative) == 0) {
+    } else if (strcmp("today", relative) == 0 ||
+               strcmp("tonight", relative) == 0)
+    {
         todue_localtime(&now, &local_tm);
         strftime(buf, size, "%Y-%m-%d 23:59:59", &local_tm);
     } else if (strcmp("tomorrow", relative) == 0) {
@@ -139,16 +142,18 @@ char *relative_iso_datetime(char *buf, size_t size, char *relative) {
                 LOG_ERROR("Failed to read integer at '%s'", relative);
                 return NULL;
             }
-        } else if (strlen(relative) > 4 && strcmp("next", substr(relative, 0, 4)) == 0) {
+        } else if (strlen(relative) > 4 &&
+                   strcmp("next", substr(relative, 0, 4)) == 0)
+        {
             multi = 1;
-            token = relative + 4;
+            token = relative + 5;
         } else {
             LOG_ERROR("Invalid relative time '%s'", relative);
             return NULL;
         }
         skip_space(&token);
         if (token == NULL || token[0] == '\0') {
-            LOG_ERROR("No relative time unit following integer '%s'", relative);
+            LOG_ERROR("No time unit following number '%s'", relative);
             return NULL;
         }
 

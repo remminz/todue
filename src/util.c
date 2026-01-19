@@ -30,9 +30,10 @@ FILE *openPager(void) {
     if (!todue_isatty_stdout()) {
         return stdout;
     }
+
     const char *pager = todue_get_pager();
     FILE *fp = todue_popen(pager, "w");
-
+    
     return fp ? fp : stdout;
 }
 
@@ -42,20 +43,19 @@ void closePager(FILE *fp) {
     }
 }
 
-void print_row(
-    int         id,
-    const char *brief,
-    const char *notes,
-    const char *created,
-    const char *due,
-    int         done,
-    void       *user_data)
+void print_row(int id, const char *brief,
+    const char *notes, const char *created,
+    const char *due, int done, void *user_data)
 {
     FILE *out = user_data;
     const int LEFT_WIDTH = 30;
     const int RIGHT_WIDTH = 80;
 
-    fprintf(out, "%s%3d%s [%c]%s ", BOLD, id, END_ITALIC, done ? 'X' : ' ', END_BOLD_DIM);
+    fprintf(
+        out,
+        "%s%3d%s [%c]%s ",
+        BOLD, id, END_ITALIC, done ? 'X' : ' ', END_BOLD_DIM
+    );
     if (done) {
         fputs(STRIKETHROUGH DIM, out);
     } else {
@@ -66,13 +66,25 @@ void print_row(
     if (notes) {
         fprintf(out, " %.*s\n", RIGHT_WIDTH, notes);
     } else {
-        fprintf(out, " %s%.*s%s\n", DIM, RIGHT_WIDTH, "No notes", END_BOLD_DIM);
+        fprintf(
+            out,
+            " %s%.*s%s\n",
+            DIM, RIGHT_WIDTH, "No notes", END_BOLD_DIM
+        );
     }
 
     if (due && is_valid_datetime(due)) {
-        fprintf(out, "   %sdue: %-*.*s%s |", LIGHT_GRAY ITALIC, LEFT_WIDTH, NO_SECONDS, due, END_ITALIC);
+        fprintf(
+            out,
+            "   %sdue: %-*.*s%s |",
+            LIGHT_GRAY ITALIC, LEFT_WIDTH, NO_SECONDS, due, END_ITALIC
+        );
     } else {
-        fprintf(out, "\t%s%-*s%s |", DIM, LEFT_WIDTH, "No due date", END_BOLD_DIM);
+        fprintf(
+            out,
+            "\t%s%-*s%s |",
+            DIM, LEFT_WIDTH, "No due date", END_BOLD_DIM
+        );
     }
 
     fprintf(out, "%s created: %s%s\n", GRAY ITALIC, created, END_ALL);

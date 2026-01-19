@@ -31,8 +31,7 @@ void print_row(
     const char *created,
     const char *due,
     int         done,
-    void       *user_data
-);
+    void       *user_data);
 const char *substr(const char *source, size_t offset, size_t size);
 void skip_space(char **str);
 void check_table(sqlite3 *db);

@@ -19,8 +19,7 @@ void log_msg(
     const char *file,
     int line,
     const char *format,
-    ...
-);
+    ...);
 
 #ifdef LOG_DISABLED
     #define LOG_ERROR(...)

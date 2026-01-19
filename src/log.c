@@ -31,12 +31,8 @@ void log_close(void) {
     log_fp = NULL;
 }
 
-void log_msg(
-    LogLevel level,
-    const char *file,
-    int line,
-    const char *format,
-    ...)
+void log_msg(LogLevel level, const char *file,
+             int line, const char *format, ...)
 {
     if (level > current_level || level == LOG_NONE) {
         return;

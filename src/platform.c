@@ -35,10 +35,11 @@ int todue_mkdir(const char *path) {
         return 0;
     }
 #endif
+
     return -1;
 }
 
-bool todue_isatty_stdout(void) {
+int todue_isatty_stdout(void) {
 #if TODUE_WINDOWS
     return _isatty(_fileno(stdout));
 #else

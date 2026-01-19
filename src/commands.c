@@ -47,13 +47,20 @@ static int cmd_load(sqlite3 **db, int argc, char **argv) {
         fprintf(stderr, "usage: todue load db_path\n");
         rc = -1;
     } else if (db_close(*db)) {
-        fprintf(stderr, "Unable to close current db '%s'\n", sqlite3_db_filename(*db, "main"));
+        fprintf(
+            stderr,
+            "Unable to close current db '%s'\n",
+            sqlite3_db_filename(*db, "main")
+        );
         rc = -1;
     } else if (db_open(db, argv[1])) {
         fprintf(stderr, "Unable to open new db '%s'\n", argv[1]);
-        if (db_open(db, old_path)) { // attempt to reopen old database
+        if (db_open(db, old_path)) {
             LOG_ERROR("Failed to reopen old db");
-            fprintf(stderr, "Old db could not be reopened: try again or quit\n");
+            fprintf(
+                stderr,
+                "Old db could not be reopened: try again or quit\n"
+            );
         }
         rc = -1;
     } else if (db_init(*db)) {
@@ -131,8 +138,15 @@ static int cmd_add(sqlite3 **db, int argc, char **argv) {
                 goto cleanup;
             }
             if (relative_iso_datetime(due, 20, argv[i + 1]) == NULL) {
-                LOG_ERROR("No valid parse from relative time string '%s'", argv[i + 1]);
-                fprintf(stderr, "Failed to parse relative time string '%s'\n", argv[i + 1]);
+                LOG_ERROR(
+                    "No valid parse from relative time string '%s'",
+                    argv[i + 1]
+                );
+                fprintf(
+                    stderr,
+                    "Failed to parse relative time string '%s'\n",
+                    argv[i + 1]
+                );
                 rc = -1;
                 goto cleanup;
             }
@@ -145,8 +159,15 @@ static int cmd_add(sqlite3 **db, int argc, char **argv) {
                 goto cleanup;
             }
             if (relative_iso_datetime(due, 20, argv[i + 1]) == NULL) {
-                LOG_ERROR("No valid parse from relative time string '%s'", argv[i + 1]);
-                fprintf(stderr, "Failed to parse relative time string '%s'\n", argv[i + 1]);
+                LOG_ERROR(
+                    "No valid parse from relative time string '%s'",
+                    argv[i + 1]
+                );
+                fprintf(
+                    stderr,
+                    "Failed to parse relative time string '%s'\n",
+                    argv[i + 1]
+                );
                 rc = -1;
                 goto cleanup;
             }
@@ -173,7 +194,10 @@ cleanup:
 static int cmd_edit(sqlite3 **db, int argc, char **argv) {
     if (argc < 4 || argc % 2 != 0 || argc > 8) {
         LOG_WARN("edit usage message triggered");
-        fprintf(stderr, "usage: todue edit <id> [-b <brief>] [-n <notes>] [-d <due_date>]\n");
+        fprintf(
+            stderr,
+            "usage: todue edit <id> [-b <brief>] [-n <notes>] [-d <due_date>]\n"
+        );
         return -1;
     }
 
@@ -289,7 +313,11 @@ static int cmd_remove(sqlite3 **db, int argc, char **argv) {
             id = strtoul(end, &end, 10);
         } else if (*end != '\0') {
             LOG_ERROR("Invalid character '%c' in rm args", *end);
-            fprintf(stderr, "Invalid character '%c' in command arguments\n", *end);
+            fprintf(
+                stderr,
+                "Invalid character '%c' in command arguments\n",
+                *end
+            );
             return -1;
         }
     }
@@ -346,7 +374,11 @@ static int cmd_done(sqlite3 **db, int argc, char **argv) {
             id = strtoul(end, &end, 10);
         } else if (*end != '\0') {
             LOG_ERROR("Invalid character '%c' in done args", *end);
-            fprintf(stderr, "Invalid character '%c' in command arguments\n", *end);
+            fprintf(
+                stderr,
+                "Invalid character '%c' in command arguments\n",
+                *end
+            );
             return -1;
         }
     }
@@ -390,16 +422,21 @@ int execute_cmd(sqlite3 **db, int argc, char **argv) {
     }
 
     int rc = 0;
-    size_t cmd_len = 1 + strlen(argv[0]); // null terminator + command
+    
+    // null terminator + command
+    size_t cmd_len = 1 + strlen(argv[0]);
     for (int i = 1; i < argc; ++i) {
-        cmd_len += strlen(argv[i]) + 3; // +3 for surrounding quotes and a preceding space
+        // +3 for surrounding quotes and a preceding space
+        cmd_len += strlen(argv[i]) + 3;
     }
+
     char *cmd = malloc(cmd_len * sizeof(*cmd));
     if (cmd == NULL) {
         rc = -1;
         goto cleanup;
     }
     cmd[0] = '\0';
+    
     strcat(cmd, argv[0]);
     for (int i = 1; i < argc; ++i) {
         strcat(cmd, " \"");
@@ -416,6 +453,7 @@ int execute_cmd(sqlite3 **db, int argc, char **argv) {
             goto cleanup;
         }
     }
+    
     rc = -1;
     LOG_WARN("Invalid command '%s' from '%s'", argv[0], cmd);
     fprintf(stderr, "Invalid command '%s'\n", argv[0]);
