@@ -1,5 +1,5 @@
 APP           := todue
-CC            := clang
+CC            := gcc
 STD_VER       := -std=c11
 
 SRC_DIR       := src
@@ -11,9 +11,8 @@ TP_DIR        := third_party
 CFLAGS        := -Wall -Wextra
 CFLAGS        += -I$(INC_DIR) -I$(TP_DIR)
 CFLAGS        += -MMD -MP
-LDFLAGS       := -fsanitize=address -fno-omit-frame-pointer
 LIBS          := -lreadline
-DEBUG_FLAGS   := -g -O0 -DDEBUG -fsanitize=address -fno-omit-frame-pointer
+DEBUG_FLAGS   := -g -O0 -DDEBUG
 RELEASE_FLAGS := -O2
 
 SRC           := $(wildcard $(SRC_DIR)/*.c)
@@ -21,11 +20,32 @@ SRC           += $(TP_DIR)/sqlite/sqlite3.c
 OBJ           := $(SRC:%.c=$(OBJ_DIR)/%.o)
 DEPS          := $(OBJ:.o=.d)
 
+ifeq ($(OS),Windows_NT)
+    PLATFORM := windows
+else
+    UNAME_S := $(shell uname -s)
+    ifeq ($(UNAME_S),Darwin)
+        PLATFORM := macos
+    else ifeq ($(UNAME_S),Linux)
+        PLATFORM := linux
+    else
+        PLATFORM := other
+$(warning Platform not officially supported)
+    endif
+endif
+
+ifeq ($(PLATFORM),windows)
+    ASAN_FLAGS :=
+else
+    ASAN_FLAGS := -fsanitize=address -fno-omit-frame-pointer
+endif
+
 .PHONY: all debug release run clean reset
 
 all: debug
 
-debug: CFLAGS += $(DEBUG_FLAGS)
+debug: CFLAGS  += $(DEBUG_FLAGS) $(ASAN_FLAGS)
+debug: LDFLAGS += $(SANITIZE) $(ASAN_FLAGS)
 debug: $(APP)
 	@echo "Debug build complete: $(APP)"
 

@@ -42,7 +42,7 @@ static int parse_cmd(const char *line, int *argc, char ***argv) {
     }
 
     int rc = 0;
-    char *line_copy = todue_strdup(line);
+    char *line_copy = strdup(line);
     if (line_copy == NULL) {
         LOG_ERROR("Failed strdup allocation");
         rc = -1;
@@ -59,7 +59,7 @@ static int parse_cmd(const char *line, int *argc, char ***argv) {
         goto cleanup;
         rc = -1;
     }
-    args[count] = todue_strdup(strtok_r(line_copy, " ", &rest)); // put gauranteed command name into args
+    args[count] = strdup(strtok_r(line_copy, " ", &rest)); // put gauranteed command name into args
     if (args[count++] == NULL) {
         LOG_ERROR("Failed strdup allocation");
         rc = -1;
@@ -95,10 +95,10 @@ static int parse_cmd(const char *line, int *argc, char ***argv) {
             }
             *end = '\0';
             strcat(buf, token);
-            args[count] = todue_strdup(buf);
+            args[count] = strdup(buf);
             buf[0] = '\0';
         } else {
-            args[count] = todue_strdup(token);
+            args[count] = strdup(token);
         }
         if (args[count++] == NULL) {
             LOG_ERROR("Failed strdup allocation");

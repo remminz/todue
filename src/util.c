@@ -32,14 +32,14 @@ FILE *openPager(void) {
     }
 
     const char *pager = todue_get_pager();
-    FILE *fp = todue_popen(pager, "w");
+    FILE *fp = popen(pager, "w");
     
     return fp ? fp : stdout;
 }
 
 void closePager(FILE *fp) {
     if (fp != stdout) {
-        todue_pclose(fp);
+        pclose(fp);
     }
 }
 

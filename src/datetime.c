@@ -118,11 +118,11 @@ char *relative_iso_datetime(char *buf, size_t size, char *relative) {
     } else if (is_valid_time(relative)) {
         todue_localtime(&now, &local_tm);
         strftime(buf, size, "%Y-%m-%d ", &local_tm);
-        strncat(buf, relative, max(0, size - 11));
+        strncat(buf, relative, max((size_t)0, size - 11));
     } else if (is_valid_short_time(relative)) {
         todue_localtime(&now, &local_tm);
         strftime(buf, size, "%Y-%m-%d ", &local_tm);
-        snprintf(buf + 11, max(0, size - 11), "%s:59", relative);
+        snprintf(buf + 11, max((size_t)0, size - 11), "%s:59", relative);
     } else if (strcmp("today", relative) == 0 ||
                strcmp("tonight", relative) == 0)
     {

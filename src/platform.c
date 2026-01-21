@@ -5,7 +5,7 @@
 
 #if TODUE_WINDOWS
     #include <direct.h>
-    #include <io.h>
+    #include <stdio.h>
 #else
     #include <sys/stat.h>
     #include <unistd.h>
@@ -61,19 +61,6 @@ const char *todue_get_pager(void) {
 #endif
 
     return pager;
-}
-
-char *todue_strdup(const char *str) {
-#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L || !TODUE_WINDOWS
-    return strdup(str);
-#else
-    size_t len = strlen(str) + 1;
-    char *p = malloc(len);
-    if (p) {
-        memcpy(p, str, len);
-    }
-    return p;
-#endif
 }
 
 struct tm *todue_localtime(const time_t *t, struct tm *result) {
