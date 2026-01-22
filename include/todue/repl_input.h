@@ -5,10 +5,10 @@
 extern "C" {
 #endif
 
-void repl_init(void);
+void repl_init(const char *history_path);
 char *repl_readline(const char *prompt);
 void repl_add_history(const char *line);
-void repl_free(void);
+void repl_shutdown(const char *history_path);
 
 #ifdef __cplusplus
 }

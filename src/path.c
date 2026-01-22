@@ -7,16 +7,13 @@
 
 #include "todue/platform.h"
 
-#define TODUE_DIR ".todue"
-#define PATH_SIZE 1024
-
 int get_todue_dir(char *buf, size_t size) {
     const char *home = todue_get_home();
 
     if (home == NULL || buf == NULL || size <= 0) {
         return -1;
     }
-    if (snprintf(buf, size, "%s/%s", home, TODUE_DIR) >= (int)size) {
+    if (snprintf(buf, size, "%s/%s", home, TODUE_DIR_NAME) >= (int)size) {
         return -1;
     }
     return 0;
@@ -24,7 +21,7 @@ int get_todue_dir(char *buf, size_t size) {
 
 int ensure_todue_dir(void) {
 #ifdef DEBUG
-    return todue_mkdir(TODUE_DIR);
+    return todue_mkdir(TODUE_DIR_NAME);
 #else
     char path[PATH_SIZE];
 
@@ -35,16 +32,16 @@ int ensure_todue_dir(void) {
 #endif
 }
 
-int todue_path(char *buf, size_t size, const char *name) {
+int todue_path(char *buf, size_t size, const char *filename) {
     char base[PATH_SIZE];
 
-    if (!name || name[0] == '\0') {
+    if (!filename || filename[0] == '\0') {
         return -1;
     }
     if (get_todue_dir(base, sizeof(base)) != 0) {
         return -1;
     }
-    if (snprintf(buf, size, "%s/%s", base, name) >= (int)size) {
+    if (snprintf(buf, size, "%s/%s", base, filename) >= (int)size) {
         return -1;
     }
     return 0;

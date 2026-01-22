@@ -4,17 +4,12 @@
 
 #include "linenoise/linenoise.h"
 
-#include "todue/path.h"
-
-#define HISTORY ".todue_history"
-static char history_path[1024];
-
-void repl_init() {
+void repl_init(const char *history_path) {
     linenoiseInstallWindowChangeHandler();
-    linenoiseHistorySetMaxLen(1024);
 
-    todue_path(history_path, sizeof(history_path), HISTORY);
-    linenoiseHistoryLoad(history_path);
+    if (history_path && history_path[0] != '\0') {
+        linenoiseHistoryLoad(history_path);
+    }
 }
 
 char *repl_readline(const char *prompt) {
@@ -22,12 +17,15 @@ char *repl_readline(const char *prompt) {
 }
 
 void repl_add_history(const char *line) {
-    if (line && *line) {
+    if (line && line[0] != '\0') {
         linenoiseHistoryAdd(line);
     }
 }
 
-void repl_free() {
-    linenoiseHistorySave(history_path);
+void repl_shutdown(const char *history_path) {
+    if (history_path && history_path[0] != '\0') {
+        linenoiseHistorySave(history_path);
+    }
+
     linenoiseHistoryFree();
 }

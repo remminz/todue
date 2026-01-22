@@ -7,6 +7,7 @@
 
 #include "todue/datetime.h"
 #include "todue/log.h"
+#include "todue/path.h"
 #include "todue/platform.h"
 #include "todue/repl_input.h"
 #include "todue/util.h"
@@ -22,7 +23,7 @@ static char *info_str(sqlite3 *db) {
     return str;
 }
 
-static void clear(sqlite3 *db) {
+static void clear_screen(sqlite3 *db) {
     printf("\033[2J\033[H");
     fflush(stdout);
     char *info = info_str(db);
@@ -113,8 +114,11 @@ cleanup:
 }
 
 void start_repl(sqlite3 **db) {
-    repl_init();
-    clear(*db);
+    char history_path[PATH_SIZE];
+    todue_path(history_path, sizeof(history_path), TODUE_HIST_FILE);
+
+    repl_init(history_path);
+    clear_screen(*db);
 
     int argc;
     char **argv;
@@ -133,13 +137,13 @@ void start_repl(sqlite3 **db) {
         repl_add_history(input);
 
         if (strcmp(input, "clear") == 0) {
-            clear(*db);
+            clear_screen(*db);
         } else {
             parse_cmd(input, &argc, &argv);
             execute_cmd(db, argc, argv);
 
             if (strcmp(argv[0], "load") == 0) {
-                clear(*db);
+                clear_screen(*db);
             }
 
             for (int i = 0; i < argc; ++i) {
@@ -150,5 +154,5 @@ void start_repl(sqlite3 **db) {
         free(input);
     }
 
-    repl_free();
+    repl_shutdown(history_path);
 }

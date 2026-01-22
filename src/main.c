@@ -17,13 +17,13 @@ int main(int argc, char **argv) {
 
     ensure_todue_dir();
 
-    char log_path[1024];
-    if (todue_path(log_path, sizeof(log_path), "debug.log")) {
+    char log_path[PATH_SIZE];
+    if (todue_path(log_path, sizeof(log_path), TODUE_LOG_FILE)) {
         return -1;
     }
 
-    char db_path[1024];
-    if (todue_path(db_path, sizeof(db_path), "todue.db")) {
+    char db_path[PATH_SIZE];
+    if (todue_path(db_path, sizeof(db_path), TODUE_DB_FILE)) {
         return -1;
     }
 
