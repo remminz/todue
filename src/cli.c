@@ -5,12 +5,10 @@
 #include <string.h>
 #include <time.h>
 
-#include <readline/readline.h>
-#include <readline/history.h>
-
 #include "todue/datetime.h"
 #include "todue/log.h"
 #include "todue/platform.h"
+#include "todue/repl_input.h"
 #include "todue/util.h"
 
 static char *info_str(sqlite3 *db) {
@@ -115,27 +113,31 @@ cleanup:
 }
 
 void start_repl(sqlite3 **db) {
+    repl_init();
     clear(*db);
 
     int argc;
     char **argv;
     char *input;
-    
-    while ((input = readline("todue> ")) != NULL) {
-        input[strcspn(input, "\n")] = '\0';
-        if (strnlen(input, 1) > 0) {
-            add_history(input);
-        }
 
+    while ((input = repl_readline("todue> ")) != NULL) {
+        if (input[0] == '\0') {
+            free(input);
+            continue;
+        }
         if (strcmp(input, "quit") == 0) {
             free(input);
             break;
-        } else if (strcmp(input, "clear") == 0) {
+        }
+
+        repl_add_history(input);
+
+        if (strcmp(input, "clear") == 0) {
             clear(*db);
         } else {
             parse_cmd(input, &argc, &argv);
             execute_cmd(db, argc, argv);
-            
+
             if (strcmp(argv[0], "load") == 0) {
                 clear(*db);
             }
@@ -147,4 +149,6 @@ void start_repl(sqlite3 **db) {
         }
         free(input);
     }
+
+    repl_free();
 }
