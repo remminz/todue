@@ -43,10 +43,7 @@ void closePager(FILE *fp) {
     }
 }
 
-void print_row(int id, const char *brief,
-    const char *notes, const char *created,
-    const char *due, int done, void *user_data)
-{
+void print_row(const TodueItem *row, void *user_data) {
     FILE *out = user_data;
     const int LEFT_WIDTH = 30;
     const int RIGHT_WIDTH = 80;
@@ -54,17 +51,17 @@ void print_row(int id, const char *brief,
     fprintf(
         out,
         "%s%3d%s [%c]%s ",
-        BOLD, id, END_ITALIC, done ? 'X' : ' ', END_BOLD_DIM
+        BOLD, row->id, END_ITALIC, row->done ? 'X' : ' ', END_BOLD_DIM
     );
-    if (done) {
+    if (row->done) {
         fputs(STRIKETHROUGH DIM, out);
     } else {
         fputs(WHITE BOLD, out);
     }
-    fprintf(out, "%-*.*s%s |", LEFT_WIDTH, LEFT_WIDTH, brief, END_ALL);
+    fprintf(out, "%-*.*s%s |", LEFT_WIDTH, LEFT_WIDTH, row->brief, END_ALL);
 
-    if (notes) {
-        fprintf(out, " %.*s\n", RIGHT_WIDTH, notes);
+    if (row->notes) {
+        fprintf(out, " %.*s\n", RIGHT_WIDTH, row->notes);
     } else {
         fprintf(
             out,
@@ -73,11 +70,11 @@ void print_row(int id, const char *brief,
         );
     }
 
-    if (due && is_valid_datetime(due)) {
+    if (row->due) {
         fprintf(
             out,
             "   %sdue: %-*.*s%s |",
-            LIGHT_GRAY ITALIC, LEFT_WIDTH, NO_SECONDS, due, END_ITALIC
+            LIGHT_GRAY ITALIC, LEFT_WIDTH, NO_SECONDS, row->due, END_ITALIC
         );
     } else {
         fprintf(
@@ -87,7 +84,7 @@ void print_row(int id, const char *brief,
         );
     }
 
-    fprintf(out, "%s created: %s%s\n", GRAY ITALIC, created, END_ALL);
+    fprintf(out, "%s created: %s%s\n", GRAY ITALIC, row->created, END_ALL);
 
     fputc('\n', out);
 }

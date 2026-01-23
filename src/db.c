@@ -269,13 +269,14 @@ int db_list(sqlite3 *db, todue_callback callback, void *user_data) {
 
     int rc;
     while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
-        int id = sqlite3_column_int(stmt, 0);
-        const char *brief = (const char *)sqlite3_column_text(stmt, 1);
-        const char *notes = (const char *)sqlite3_column_text(stmt, 2);
-        const char *created = (const char *)sqlite3_column_text(stmt, 3);
-        const char *due = (const char *)sqlite3_column_text(stmt, 4);
-        int done = sqlite3_column_int(stmt, 5);
-        callback(id, brief, notes, created, due, done, user_data);
+        TodueItem item;
+        item.id = sqlite3_column_int(stmt, 0);
+        item.brief = (const char *)sqlite3_column_text(stmt, 1);
+        item.notes = (const char *)sqlite3_column_text(stmt, 2);
+        item.created = (const char *)sqlite3_column_text(stmt, 3);
+        item.due = (const char *)sqlite3_column_text(stmt, 4);
+        item.done = sqlite3_column_int(stmt, 5);
+        callback(&item, user_data);
     }
     
     if (rc != SQLITE_DONE) {

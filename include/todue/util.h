@@ -1,11 +1,13 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include "sqlite/sqlite3.h"
-
 #include <stddef.h>
 #include <stdio.h>
 #include <time.h>
+
+#include "sqlite/sqlite3.h"
+
+#include "todue/db.h"
 
 // gcc and clang only
 #define max(a,b)             \
@@ -24,14 +26,7 @@
 
 FILE *openPager(void);
 void closePager(FILE *fp);
-void print_row(
-    int         id,
-    const char *brief,
-    const char *notes,
-    const char *created,
-    const char *due,
-    int         done,
-    void       *user_data);
+void print_row(const TodueItem *row, void *user_data);
 const char *substr(const char *source, size_t offset, size_t size);
 void skip_space(char **str);
 void check_table(sqlite3 *db);

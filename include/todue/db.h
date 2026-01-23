@@ -5,14 +5,18 @@
 
 #include <stdbool.h>
 
+typedef struct {
+    int         id;
+    const char *brief;
+    const char *notes;
+    const char *created;
+    const char *due;
+    int         done;
+} TodueItem;
+
 typedef void (*todue_callback)(
-    int         id,
-    const char *brief,
-    const char *notes,
-    const char *created,
-    const char *due,
-    int         done,
-    void       *user_data
+    const TodueItem *item,
+    void      *user_data
 );
 
 int db_open(sqlite3 **db, const char *path);
