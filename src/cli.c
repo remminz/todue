@@ -55,8 +55,8 @@ static int parse_cmd(const char *line, int *argc, char ***argv) {
     char **args = malloc(1 * sizeof(*args));
     if (args == NULL) {
         LOG_ERROR("Failed malloc of argv");
-        goto cleanup;
         rc = -1;
+        goto cleanup;
     }
     args[count] = strdup(strtok_r(line_copy, " ", &rest)); // put gauranteed command name into args
     if (args[count++] == NULL) {
@@ -73,22 +73,28 @@ static int parse_cmd(const char *line, int *argc, char ***argv) {
         args = realloc(args, (count + 1) * sizeof(*args));
         if (args == NULL) {
             LOG_ERROR("Failed realloc of argv");
-            goto cleanup;
             rc = -1;
+            goto cleanup;
         }
 
-        if (token[0] == '"' || token[0] == '\'') {
+        if ((token[0] == '"' || token[0] == '\'') && (token[0] != token[1])) {
+            const char quote = token[0];
             char *end = token + strlen(token) - 1;
-            ++token;
+            if (*end == '\0') {
+                LOG_ERROR("Unmatched quote in args");
+                rc = -1;
+                goto cleanup;
+            }
 
-            while (*end != token[0] || end == token) {
+            ++token;
+            while (*end != quote) {
                 strcat(buf, token);
                 strcat(buf, " ");
                 token = strtok_r(NULL, " ", &rest);
                 if (token == NULL) {
                     LOG_ERROR("Unmatched quote in args");
-                    goto cleanup;
                     rc = -1;
+                    goto cleanup;
                 }
                 end = token + strlen(token) - 1;
             }
@@ -139,7 +145,11 @@ void start_repl(sqlite3 **db) {
         if (strcmp(input, "clear") == 0) {
             clear_screen(*db);
         } else {
-            parse_cmd(input, &argc, &argv);
+            if (parse_cmd(input, &argc, &argv)) {
+                fprintf(stderr, "Failed to parse command\n");
+                free(input);
+                continue;
+            }
             execute_cmd(db, argc, argv);
 
             if (strcmp(argv[0], "load") == 0) {
