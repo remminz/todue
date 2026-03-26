@@ -16,9 +16,10 @@ typedef struct {
 
 typedef void (*todue_callback)(
     const TodueItem *item,
-    void      *user_data
+    void *user_data
 );
 
+sqlite3 *db_setup(const char *path);
 int db_open(sqlite3 **db, const char *path);
 int db_close(sqlite3 *db);
 int db_init(sqlite3 *db);

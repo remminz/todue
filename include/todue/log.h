@@ -11,8 +11,9 @@ typedef enum {
     LOG_DEBUG = 3
 } LogLevel;
 
+int log_init(LogLevel level);
 void log_set_level(LogLevel level);
-void log_set_file(const char *path);
+int log_set_file(const char *path);
 void log_close(void);
 void log_msg(
     LogLevel level,

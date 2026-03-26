@@ -3,24 +3,42 @@
 #include <stdarg.h>
 #include <time.h>
 
+#include "todue/path.h"
 #include "todue/platform.h"
 #include "todue/util.h"
 
 static LogLevel current_level = LOG_INFO;
 static FILE *log_fp = NULL;
 
+int log_init(LogLevel level) {
+#ifdef LOG_DISABLED
+    return 0;
+#endif
+
+    log_set_level(level);
+
+    char path[PATH_SIZE];
+    if (todue_state_path(path, sizeof(path), TODUE_LOG_FILE)) {
+        return -1;
+    }
+    return log_set_file(path);
+}
+
 void log_set_level(LogLevel level) {
     current_level = level;
 }
 
-void log_set_file(const char *path) {
+int log_set_file(const char *path) {
     if (log_fp) {
         fclose(log_fp);
     }
     log_fp = fopen(path, "a");
+
     if (log_fp == NULL) {
         log_fp = stderr;
+        return -1;
     }
+    return 0;
 }
 
 void log_close(void) {
@@ -37,14 +55,14 @@ void log_msg(LogLevel level, const char *file,
     if (level > current_level || level == LOG_NONE) {
         return;
     }
-    
+
     const char *level_names[] = {
         "ERROR",
         "WARN",
         "INFO",
         "DEBUG"
     };
-    
+
     time_t now = time(NULL);
     struct tm timestamp;
     todue_localtime(&now, &timestamp);

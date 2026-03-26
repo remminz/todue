@@ -5,6 +5,17 @@
 
 #include "todue/log.h"
 
+sqlite3 *db_setup(const char *path) {
+    sqlite3 *db;
+    db_open(&db, path);
+    db_init(db);
+
+    if (db == NULL) {
+        LOG_ERROR("db setup failed");
+    }
+    return db;
+}
+
 int db_open(sqlite3 **db, const char *path) {
     int rc = sqlite3_open(path, db);
     if (rc != SQLITE_OK) {
@@ -183,7 +194,7 @@ int db_mark_range_done(sqlite3 *db, int start, int end) {
 
 int db_mark_all_done(sqlite3 *db) {
     const char *sql = "UPDATE todue SET done = 1;";
-    
+
     int rc = sqlite3_exec(db, sql, NULL, NULL, NULL);
     if (rc != SQLITE_OK) {
         LOG_ERROR("Failed to mark all done: %s", sqlite3_errmsg(db));
@@ -237,7 +248,7 @@ int db_delete_range(sqlite3 *db, int start, int end) {
 
 int db_delete_done(sqlite3 *db) {
     const char *sql = "DELETE FROM todue WHERE done = 1;";
-    
+
     int rc = sqlite3_exec(db, sql, NULL, NULL, NULL);
     if (rc != SQLITE_OK) {
         LOG_ERROR("Failed to delete items: %s", sqlite3_errmsg(db));
@@ -248,7 +259,7 @@ int db_delete_done(sqlite3 *db) {
 
 int db_delete_all(sqlite3 *db) {
     const char *sql = "DELETE FROM todue;";
-    
+
     int rc = sqlite3_exec(db, sql, NULL, NULL, NULL);
     if (rc != SQLITE_OK) {
         LOG_ERROR("Failed to delete items: %s", sqlite3_errmsg(db));
@@ -278,7 +289,7 @@ int db_list(sqlite3 *db, todue_callback callback, void *user_data) {
         item.done = sqlite3_column_int(stmt, 5);
         callback(&item, user_data);
     }
-    
+
     if (rc != SQLITE_DONE) {
         sqlite3_finalize(stmt);
         LOG_ERROR("Failed to list database: %s", sqlite3_errmsg(db));

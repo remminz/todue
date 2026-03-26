@@ -15,7 +15,7 @@
 static char *info_str(sqlite3 *db) {
     char time_str[20];
     current_iso_datetime(time_str, sizeof(time_str));
-    
+
     const char* path = sqlite3_db_filename(db, "main");
     char *str = malloc(sizeof(char) * 256);
 
@@ -50,7 +50,7 @@ static int parse_cmd(const char *line, int *argc, char ***argv) {
     char *token;
     char *rest = NULL;
     char buf[CLI_LINE_LIMIT] = "";
-    
+
     int count = 0;
     char **args = malloc(1 * sizeof(*args));
     if (args == NULL) {
@@ -121,7 +121,8 @@ cleanup:
 
 void start_repl(sqlite3 **db) {
     char history_path[PATH_SIZE];
-    todue_path(history_path, sizeof(history_path), TODUE_HIST_FILE);
+    // no need for error checking; no history if failed
+    todue_state_path(history_path, sizeof(history_path), TODUE_HIST_FILE);
 
     repl_init(history_path);
     clear_screen(*db);

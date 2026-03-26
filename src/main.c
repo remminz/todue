@@ -11,40 +11,41 @@
 #include "todue/util.h"
 
 int main(int argc, char **argv) {
+    // zero is possible if called as subprocess
     if (argc == 0 || argv[0] == NULL) {
         return 0;
     }
 
-    ensure_todue_dir();
-
-    char log_path[PATH_SIZE];
-    if (todue_path(log_path, sizeof(log_path), TODUE_LOG_FILE)) {
-        return -1;
-    }
-
-    char db_path[PATH_SIZE];
-    if (todue_path(db_path, sizeof(db_path), TODUE_DB_FILE)) {
+    // app checks and setup
+    if (ensure_todue_dirs()) {
         return -1;
     }
 
     int rc = 0;
-    log_set_level(LOG_DEBUG);
-    log_set_file(log_path);
-    
-    sqlite3 *db = NULL;
-    db_open(&db, db_path);
-    db_init(db);
+
+    char db_path[PATH_SIZE];
+    if (todue_state_path(db_path, sizeof(db_path), TODUE_DB_FILE)) {
+        return -1;
+    }
+
+    if (log_init(LOG_DEBUG)) {
+        return -1;
+    }
+
+    // open/create and setup database
+    sqlite3 *db = db_setup(db_path);
     if (db == NULL) {
-        LOG_ERROR("Failed to open db on program start");
         fprintf(stderr, "Failed to open db on program start\n");
         rc = -1;
         goto cleanup;
     }
 
+    // run app
     if (argc == 1) {
         start_repl(&db);
     } else {
-        argc = argc > CLI_ARGC_LIMIT ? CLI_ARGC_LIMIT : argc - 1;
+        // remove program name from args and clamp size to limit
+        argc = min(argc - 1, CLI_ARGC_LIMIT);
         ++argv;
         execute_cmd(&db, argc, argv);
     }

@@ -7,42 +7,83 @@
 
 #include "todue/platform.h"
 
-int get_todue_dir(char *buf, size_t size) {
-    const char *home = todue_get_home();
-
-    if (home == NULL || buf == NULL || size <= 0) {
-        return -1;
-    }
-    if (snprintf(buf, size, "%s/%s", home, TODUE_DIR_NAME) >= (int)size) {
-        return -1;
+int ensure_todue_dirs(void) {
+#ifdef DEBUG
+    if (!dir_exists(APP_DOT_DIR)) {
+        return todue_mkdir(APP_DOT_DIR);
     }
     return 0;
-}
-
-int ensure_todue_dir(void) {
-#ifdef DEBUG
-    return todue_mkdir(TODUE_DIR_NAME);
 #else
-    char path[PATH_SIZE];
+    int rc = 0;
+    char *dir;
 
-    if (get_todue_dir(path, sizeof(path)))
-        return -1;
+    dir = todue_state_dir();
+    if (!dir_exists(dir)) {
+        if (todue_mkdir(dir)) {
+            rc = -1;
+        }
+    }
+    free(dir);
 
-    return todue_mkdir(path);
+    // Not in use yet
+    /*
+    dir = todue_config_dir();
+    if (!dir_exists(dir)) {
+        if (todue_mkdir(dir)) {
+            rc = -1;
+        }
+    }
+    free(dir);
+
+    dir = todue_cache_dir();
+    if (!dir_exists(dir)) {
+        if (todue_mkdir(dir)) {
+            rc = -1;
+        }
+    }
+    free(dir);
+    */
+    return rc;
 #endif
 }
 
-int todue_path(char *buf, size_t size, const char *filename) {
-    char base[PATH_SIZE];
+static int todue_data_path(char *(*dir_fn)(void), char *buf,
+                           size_t size, const char *name) {
+    if (!name || *name == '\0') {
+        return -1;
+    }
 
-    if (!filename || filename[0] == '\0') {
-        return -1;
-    }
-    if (get_todue_dir(base, sizeof(base)) != 0) {
-        return -1;
-    }
-    if (snprintf(buf, size, "%s/%s", base, filename) >= (int)size) {
+#ifdef DEBUG
+    (void)dir_fn;
+    int written = snprintf(buf, size, "%s/%s", APP_DOT_DIR, name);
+    if (written < 0 || (size_t)written >= size) {
         return -1;
     }
     return 0;
+#else
+    char *base = dir_fn();
+    if (!base) {
+        return -1;
+    }
+
+    int written = snprintf(buf, size, "%s/%s", base, name);
+    free(base);
+
+    if (written < 0 || (size_t)written >= size) {
+        return -1;
+    }
+    return 0;
+#endif
+}
+
+int todue_state_path(char *buf, size_t size, const char *name) {
+    return todue_data_path(todue_state_dir, buf, size, name);
+}
+
+int todue_config_path(char *buf, size_t size, const char *name) {
+    return todue_data_path(todue_config_dir, buf, size, name);
+}
+
+int todue_cache_path(char *buf, size_t size, const char *name) {
+    return todue_data_path(todue_cache_dir, buf, size, name);
 }

@@ -3,23 +3,14 @@
 
 #include <stddef.h>
 
-#define TODUE_DIR_NAME   ".todue"
 #define TODUE_DB_FILE    "todue.db"
 #define TODUE_LOG_FILE   "debug.log"
 #define TODUE_HIST_FILE  ".history"
 #define PATH_SIZE 1024
 
-int get_todue_dir(char *buf, size_t size);
-int ensure_todue_dir(void);
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-int todue_path(char *buf, size_t size, const char *filename);
-
-#ifdef __cplusplus
-}
-#endif
+int ensure_todue_dirs(void);
+int todue_state_path(char *buf, size_t size, const char *name);
+int todue_config_path(char *buf, size_t size, const char *name);
+int todue_cache_path(char *buf, size_t size, const char *name);
 
 #endif // PATH_H

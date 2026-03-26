@@ -74,10 +74,12 @@ debug: CFLAGS += $(DEBUG_FLAGS) $(ASAN_FLAGS)
 debug: CXXFLAGS += $(DEBUG_FLAGS) $(ASAN_FLAGS)
 debug: LDFLAGS += $(ASAN_FLAGS)
 debug: $(APP)
+	@echo "Debug build complete: $(APP)"
 
 release: CFLAGS += $(RELEASE_FLAGS)
 release: CXXFLAGS += $(RELEASE_FLAGS)
-release: $(APP)
+release: reset $(APP)
+	@echo "Release build complete: $(APP)"
 
 $(APP): $(OBJ)
 	$(CXX) $(STD_VER) $(LDFLAGS) $^ -o $@
@@ -101,6 +103,6 @@ clean:
 	rm -rf $(OBJ_DIR)/$(SRC_DIR)
 
 reset:
-	rm -rf $(BUILD_DIR) $(APP)*
+	rm -rf $(BUILD_DIR) $(APP) $(APP).exe
 
 -include $(DEPS)
