@@ -18,25 +18,27 @@ int main(int argc, char **argv) {
 
     // app checks and setup
     if (ensure_todue_dirs()) {
-        return -1;
+        fputs("Failed to ensure all app data directories\n", stderr);
+        return 1;
+    }
+
+    char db_path[PATH_SIZE];
+    if (todue_state_path(db_path, sizeof(db_path), TODUE_DB_FILE)) {
+        fputs("Failed to get home database path\n", stderr);
+        return 2;
+    }
+
+    if (log_init(LOG_DEBUG)) {
+        LOG_WARN("Failed to open log file; defaulted to stderr");
     }
 
     int rc = 0;
 
-    char db_path[PATH_SIZE];
-    if (todue_state_path(db_path, sizeof(db_path), TODUE_DB_FILE)) {
-        return -1;
-    }
-
-    if (log_init(LOG_DEBUG)) {
-        return -1;
-    }
-
     // open/create and setup database
     sqlite3 *db = db_setup(db_path);
     if (db == NULL) {
-        fprintf(stderr, "Failed to open db on program start\n");
-        rc = -1;
+        fputs("Failed to open home database on program start\n", stderr);
+        rc = 3;
         goto cleanup;
     }
 
