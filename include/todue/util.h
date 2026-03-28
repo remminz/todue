@@ -27,7 +27,8 @@
 FILE *openPager(void);
 void closePager(FILE *fp);
 void print_row(const TodueItem *row, void *user_data);
-const char *substr(const char *source, size_t offset, size_t size);
+char *substr(const char *source, size_t offset, size_t size);
+char *strjoin(const char *s1, const char *s2);
 void skip_space(char **str);
 void check_table(sqlite3 *db);
 

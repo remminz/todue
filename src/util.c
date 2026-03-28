@@ -33,7 +33,7 @@ FILE *openPager(void) {
 
     const char *pager = todue_get_pager();
     FILE *fp = popen(pager, "w");
-    
+
     return fp ? fp : stdout;
 }
 
@@ -89,14 +89,14 @@ void print_row(const TodueItem *row, void *user_data) {
     fputc('\n', out);
 }
 
-const char *substr(const char *src, size_t idx, size_t size) {
+char *substr(const char *src, size_t offset, size_t size) {
     if (src == NULL || size <= 0) {
         return NULL;
     }
 
     size_t src_len = strlen(src);
-    if (idx + size > src_len) {
-        size = src_len - idx;
+    if (offset + size > src_len) {
+        size = src_len - offset;
     }
 
     char *str = malloc(sizeof(char) * (size + 1));
@@ -104,9 +104,16 @@ const char *substr(const char *src, size_t idx, size_t size) {
         return NULL;
     }
 
-    strncpy(str, src + idx, size);
+    strncpy(str, src + offset, size);
     str[size] = '\0';
 
+    return str;
+}
+
+char *strjoin(const char *s1, const char *s2) {
+    size_t len = strlen(s1) + strlen(s2) + 1;
+    char *str = malloc(len * sizeof(*str));
+    snprintf(str, len, "%s%s", s1, s2);
     return str;
 }
 

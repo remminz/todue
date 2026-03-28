@@ -1,5 +1,6 @@
 #include "todue/platform.h"
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -132,16 +133,15 @@ char *todue_cache_dir(void) {
 
 int todue_mkdir(const char *path) {
 #if defined(TODUE_WINDOWS)
-    if (_mkdir(path) == 0) {
-        return 0;
+    if (_mkdir(path)) {
+        return errno;
     }
 #else
-    if (mkdir(path, 0700) == 0) {
-        return 0;
+    if (mkdir(path, 0700)) {
+        return errno;
     }
 #endif
-
-    return -1;
+    return 0;
 }
 
 int todue_isatty_stdout(void) {
@@ -187,13 +187,13 @@ bool dir_exists(const char *path) {
 #ifdef TODUE_WINDOWS
     struct _stat st;
     if (_stat(path, &st) != 0) {
-        return 0;
+        return false;
     }
     return (st.st_mode & _S_IFDIR) != 0;
 #else
     struct stat st;
     if (stat(path, &st) != 0) {
-        return 0;
+        return false;
     }
     return S_ISDIR(st.st_mode);
 #endif

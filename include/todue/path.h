@@ -3,9 +3,9 @@
 
 #include <stddef.h>
 
-#define TODUE_DB_FILE    "todue.db"
-#define TODUE_LOG_FILE   "debug.log"
-#define TODUE_HIST_FILE  ".history"
+#define TODUE_DB_FILE   "todue.db"
+#define TODUE_LOG_DIR   "logs"
+#define TODUE_HIST_FILE ".history"
 #define PATH_SIZE 1024
 
 int ensure_todue_dirs(void);

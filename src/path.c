@@ -6,45 +6,49 @@
 #include <stdio.h>
 
 #include "todue/platform.h"
+#include "todue/util.h"
 
-int ensure_todue_dirs(void) {
-#ifdef DEBUG
-    if (!dir_exists(APP_DOT_DIR)) {
-        return todue_mkdir(APP_DOT_DIR);
+static int ensure_dir(const char *dir) {
+    int error = todue_mkdir(dir);
+    if (error && !dir_exists(dir)) {
+        fprintf(stderr, "mkdir failed on %s: %s\n", dir, strerror(error));
+        return -1;
     }
     return 0;
-#else
+}
+
+int ensure_todue_dirs(void) {
     int rc = 0;
     char *dir;
 
     dir = todue_state_dir();
-    if (!dir_exists(dir)) {
-        if (todue_mkdir(dir)) {
+    if (ensure_dir(dir)) {
+        rc = -1;
+    } else { // build subdirectories with this pattern
+        char *logs = strjoin(dir, "/" TODUE_LOG_DIR);
+        if (ensure_dir(logs)) {
             rc = -1;
         }
+        free(logs);
     }
     free(dir);
 
     // Not in use yet
     /*
     dir = todue_config_dir();
-    if (!dir_exists(dir)) {
-        if (todue_mkdir(dir)) {
-            rc = -1;
-        }
+    if (ensure_dir(dir)) {
+        rc = -1;
     }
     free(dir);
 
     dir = todue_cache_dir();
-    if (!dir_exists(dir)) {
-        if (todue_mkdir(dir)) {
-            rc = -1;
-        }
+    if (ensure_dir(dir)) {
+        rc = -1;
     }
     free(dir);
     */
+
     return rc;
-#endif
 }
 
 static int todue_data_path(char *(*dir_fn)(void), char *buf,
