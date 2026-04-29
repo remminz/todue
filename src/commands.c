@@ -22,14 +22,15 @@ static int cmd_help(sqlite3 **db, int argc, char **argv) {
 
     printf(
         "todue commands:\n"
-        "  help                                | Show this screen\n"
-        "  load db_path                        | Load an existing database or create a new one\n"
-        "  reload                              | Reload the current database\n"
-        "  add brief [-n notes] [-d due_date]  | Add an item\n"
-        "  rm {id... | --done | --all}         | Remove one or more items\n"
-        "  done id                             | Mark an item as done\n"
-        "  ls                                  | List all todues\n"
-        "  quit                                | Exit the CLI\n"
+        "  help                                                 | Show this screen\n"
+        "  load db_path                                         | Load an existing database or create a new one\n"
+        "  reload                                               | Reload the current database\n"
+        "  add <brief> [-n notes] [-d due_date]                 | Add an item\n"
+        "  edit <id> [-b <brief>] [-n <notes>] [-d <due_date>]  | Edit one or more details of an item\n"
+        "  rm {id... | --done | --all}                          | Remove one or more items\n"
+        "  done {id... | --all}                                 | Mark one or more items as done\n"
+        "  ls                                                   | List all todues\n"
+        "  quit                                                 | Exit the CLI\n"
     );
     return 0;
 }
