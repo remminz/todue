@@ -15,6 +15,9 @@ CXXFLAGS     := -std=c++11 -Wall -Wextra -I$(INCDIR) -I$(TPDIR) -MMD -MP
 DEBUGFLAGS   := -g -O0 -DDEBUG
 RELEASEFLAGS := -O2
 
+# Supresses unimportant warnings in library compilation
+QUIETFLAGS   := -Wno-implicit-fallthrough
+
 # -------------------------
 # Platform detection
 # -------------------------
@@ -28,14 +31,16 @@ ifneq (,$(filter MINGW% MSYS% CYGWIN%,$(UNAME)))
 else
     BIN := $(APP)
 	ifeq ($(UNAME),Darwin)
-		PLATFORM := darwin
+		PLATFORM := macos
 		PREFIX   ?= /usr/local
 	else ifeq ($(UNAME),Linux)
 		PLATFORM := linux
+		CFLAGS   += -D_POSIX_C_SOURCE=200809L
 		PREFIX   ?= $(HOME)/.local
 	else
-$(warning Platform not recognized or officially supported)
-		PLATFORM := unknown
+$(warning Platform "$(UNAME)" not recognized or officially supported. Will be treated as Linux)
+		PLATFORM := linux
+		CFLAGS   += -D_POSIX_C_SOURCE=200809L
 		PREFIX   ?= .
 	endif
 	BINDIR  ?= $(PREFIX)/bin
@@ -55,7 +60,9 @@ endif
 # -------------------------
 SRC_C := \
     $(wildcard $(SRCDIR)/*.c) \
-    $(TPDIR)/sqlite/sqlite3.c
+    $(TPDIR)/sqlite/sqlite3.c \
+	$(SRCDIR)/platform/common.c \
+	$(SRCDIR)/platform/$(PLATFORM).c
 
 SRC_CPP := \
     $(TPDIR)/linenoise/linenoise.cpp \
@@ -97,6 +104,8 @@ $(OBJDIR)/%.o: %.c
 $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(OBJDIR)/$(TPDIR)/%.o: CXXFLAGS += $(QUIETFLAGS)
 
 clean:
 	rm -rf $(OBJDIR)/$(SRCDIR)

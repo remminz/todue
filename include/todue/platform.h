@@ -21,15 +21,18 @@
     #warning "Platform not officially suported. Treating as linux."
 #endif
 
-char *todue_state_dir(void);
-char *todue_config_dir(void);
-char *todue_cache_dir(void);
+// Common
+bool dir_exists(const char *path);
+char *dir_join(const char *s1, const char *s2);
+const char *getenv_nonempty(const char *name);
 int todue_mkdir(const char *path);
 int todue_isatty_stdout(void);
 const char *todue_get_pager(void);
-bool dir_exists(const char *path);
-
-// cross-platform thread-safe localtime wrapper
 struct tm *todue_localtime(const time_t *t, struct tm *result);
+
+// Platform
+char *todue_state_dir(void);
+char *todue_config_dir(void);
+char *todue_cache_dir(void);
 
 #endif // PLATFORM_H
