@@ -10,6 +10,42 @@
 #include "todue/platform.h"
 #include "todue/util.h"
 
+#ifdef DEBUG
+static int cmd_debug(sqlite3 **db, int argc, char **argv) {
+    (void)db;
+
+    if (argc <= 1) {
+        return 0;
+    }
+
+    size_t total_len = 0;
+
+    for (int i = 0; i < argc; ++i) {
+        // +3 for surrounding quotes and ',' or '\0'
+        total_len += strlen(argv[i]) + 3;
+    }
+
+    char *argstr = malloc(total_len);
+    if (!argstr) {
+        LOG_ERROR("malloc failed in debug command");
+        return 1;
+    }
+
+    argstr[0] = '\0';
+    snprintf(argstr, total_len, "\"%s\"", argv[0]);
+    for (int i = 1; i < argc; ++i) {
+        size_t len = strlen(argstr);
+        snprintf(argstr + len, total_len - len, ",\"%s\"", argv[i]);
+    }
+
+    LOG_DEBUG("debug command ran with argc=%d and argv=[%s]", argc, argstr);
+    fprintf(stdout, "debug command ran with argc=%d and argv=[%s]\n", argc, argstr);
+
+    free(argstr);
+    return 0;
+}
+#endif
+
 static int cmd_help(sqlite3 **db, int argc, char **argv) {
     (void)db;
     (void)argv;
@@ -289,7 +325,7 @@ static int cmd_remove(sqlite3 **db, int argc, char **argv) {
 
     char *end = NULL;
     unsigned long id = strtoul(argv[1], &end, 10);
-    
+
     while (id != 0) {
         if (*end == '\0') {
             db_delete_todue(*db, id);
@@ -347,10 +383,10 @@ static int cmd_done(sqlite3 **db, int argc, char **argv) {
         }
         return 0;
     }
-    
+
     char *end = NULL;
     unsigned long id = strtoul(argv[1], &end, 10);
-    
+
     while (id != 0) {
         if (*end == '\0') {
             db_mark_done(*db, id);
@@ -407,6 +443,9 @@ static int cmd_list(sqlite3 **db, int argc, char **argv) {
 }
 
 const Command commands[] = {
+#ifdef DEBUG
+    {"debug", cmd_debug},
+#endif
     {"help", cmd_help},
     {"load", cmd_load},
     {"reload", cmd_reload},
@@ -423,7 +462,7 @@ int execute_cmd(sqlite3 **db, int argc, char **argv) {
     }
 
     int rc = 0;
-    
+
     // null terminator + command
     size_t cmd_len = 1 + strlen(argv[0]);
     for (int i = 1; i < argc; ++i) {
@@ -437,7 +476,7 @@ int execute_cmd(sqlite3 **db, int argc, char **argv) {
         goto cleanup;
     }
     cmd[0] = '\0';
-    
+
     strcat(cmd, argv[0]);
     for (int i = 1; i < argc; ++i) {
         strcat(cmd, " \"");
@@ -454,7 +493,7 @@ int execute_cmd(sqlite3 **db, int argc, char **argv) {
             goto cleanup;
         }
     }
-    
+
     rc = -1;
     LOG_WARN("Invalid command '%s' from '%s'", argv[0], cmd);
     fprintf(stderr, "Invalid command '%s'\n", argv[0]);
