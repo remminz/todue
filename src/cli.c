@@ -1,5 +1,6 @@
 #include "todue/cli.h"
 
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -58,7 +59,9 @@ static int parse_cmd(const char *line, int *argc, char ***argv) {
         rc = -1;
         goto cleanup;
     }
-    args[count] = strdup(strtok_r(line_copy, " ", &rest)); // put gauranteed command name into args
+
+    // put guaranteed command name into args
+    args[count] = strdup(strtok_r(line_copy, " ", &rest));
     if (args[count++] == NULL) {
         LOG_ERROR("Failed strdup allocation");
         rc = -1;
@@ -120,7 +123,7 @@ cleanup:
 }
 
 void start_repl(sqlite3 **db) {
-    char history_path[PATH_SIZE];
+    char history_path[PATH_MAX];
     // no need for error checking; no history if failed
     todue_state_path(history_path, sizeof(history_path), TODUE_HIST_FILE);
 

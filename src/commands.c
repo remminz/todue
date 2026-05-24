@@ -442,7 +442,7 @@ static int cmd_list(sqlite3 **db, int argc, char **argv) {
     return 0;
 }
 
-const Command commands[] = {
+static const Command commands[] = {
 #ifdef DEBUG
     {"debug", cmd_debug},
 #endif
@@ -484,7 +484,7 @@ int execute_cmd(sqlite3 **db, int argc, char **argv) {
         strcat(cmd, "\"");
     }
 
-    for (size_t i = 0; i < sizeof(commands) / sizeof(Command); ++i) {
+    for (size_t i = 0; i < ARRAY_LEN(commands); ++i) {
         if (strcmp(argv[0], commands[i].name) == 0) {
             LOG_DEBUG("Matched command '%s' from '%s'", argv[0], cmd);
             if (commands[i].func(db, argc, argv)) {

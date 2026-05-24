@@ -9,7 +9,9 @@
 
 #include "todue/db.h"
 
-// gcc and clang only
+#define ARRAY_LEN(x) (sizeof(x) / sizeof((x)[0]))
+
+// min/max gcc and clang only
 #define max(a,b)             \
 ({                           \
     __typeof__ (a) _a = (a); \

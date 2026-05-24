@@ -16,7 +16,7 @@ DEBUGFLAGS   := -g -O0 -DDEBUG
 RELEASEFLAGS := -O2
 
 # Supresses unimportant warnings in library compilation
-QUIETFLAGS   := -Wno-implicit-fallthrough
+QUIETFLAGS   := -Wno-implicit-fallthrough -Wno-unused
 
 # -------------------------
 # Platform detection
@@ -28,6 +28,7 @@ ifneq (,$(filter MINGW% MSYS% CYGWIN%,$(UNAME)))
 	PREFIX   ?= $(LOCALAPPDATA)/Programs
     BIN      := $(APP).exe
     BINDIR   ?= $(PREFIX)/$(APP)
+	CFLAGS   += -DNOMINMAX
 else
     BIN := $(APP)
 	ifeq ($(UNAME),Darwin)
@@ -35,12 +36,12 @@ else
 		PREFIX   ?= /usr/local
 	else ifeq ($(UNAME),Linux)
 		PLATFORM := linux
-		CFLAGS   += -D_POSIX_C_SOURCE=200809L
+		CFLAGS   += -D_POSIX_C_SOURCE=200809L -D_DEFAULT_SOURCE
 		PREFIX   ?= $(HOME)/.local
 	else
 $(warning Platform "$(UNAME)" not recognized or officially supported. Will be treated as Linux)
 		PLATFORM := linux
-		CFLAGS   += -D_POSIX_C_SOURCE=200809L
+		CFLAGS   += -D_POSIX_C_SOURCE=200809L -D_DEFAULT_SOURCE
 		PREFIX   ?= .
 	endif
 	BINDIR  ?= $(PREFIX)/bin
@@ -105,6 +106,7 @@ $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+$(OBJDIR)/$(TPDIR)/%.o: CFLAGS += $(QUIETFLAGS)
 $(OBJDIR)/$(TPDIR)/%.o: CXXFLAGS += $(QUIETFLAGS)
 
 clean:

@@ -1,30 +1,29 @@
 #include "todue/log.h"
 
 #include <stdarg.h>
-#include "string.h"
-#include <time.h>
 #include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
 #include "todue/datetime.h"
 #include "todue/path.h"
 #include "todue/platform.h"
 #include "todue/util.h"
 
-static const size_t ISO_DATE_LEN = sizeof("YYYY-MM-DD");
+#define LOG_ROTATION_COUNT 7
 
 static LogLevel current_level = LOG_INFO;
 static FILE *log_fp = NULL;
 
 static char *resolve_log_name(void) {
-     // todue-YYYY-MM-DD.log
-    char *date = malloc(ISO_DATE_LEN * sizeof(*date));
+    char *date = malloc(ISO_DATETIME_SIZE * sizeof(*date));
     if (!date) {
         fputs("Failed malloc in log setup\n", stderr);
         return NULL;
     }
 
-    current_iso_datetime(date, ISO_DATE_LEN);
-    date[ISO_DATE_LEN - 1] = '\0';
+    current_iso_datetime(date, ISO_DATETIME_SIZE);
+    date[ISO_DATE_LEN] = '\0';
 
     const char *fmt = "%s-%s.log";
     size_t len = snprintf(NULL, 0, fmt, APP_NAME, date) + 1;
@@ -42,10 +41,10 @@ static char *resolve_log_path(void) {
         return NULL;
     }
 
-    char *log_path = strjoin(TODUE_LOG_DIR "/", log_name);
+    char *log_path = dir_join(TODUE_LOG_DIR, log_name);
     free(log_name);
 
-    char path[PATH_SIZE];
+    char path[PATH_LIMIT];
     todue_state_path(path, sizeof(path), log_path);
 
     free(log_path);
@@ -55,14 +54,21 @@ static char *resolve_log_path(void) {
 int log_init(LogLevel level) {
 #ifdef LOG_DISABLED
     return 0;
-#endif
+#else
     log_set_level(level);
 
     char *log_path = resolve_log_path();
     int rc = log_set_file(log_path);
-
     free(log_path);
+
+    char *dir = todue_state_dir();
+    char *logs = dir_join(dir, TODUE_LOG_DIR);
+    rotate_logs(logs, LOG_ROTATION_COUNT);
+    free(dir);
+    free(logs);
+
     return rc;
+#endif
 }
 
 void log_set_level(LogLevel level) {

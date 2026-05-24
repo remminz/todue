@@ -34,7 +34,7 @@ char *dir_join(const char *s1, const char *s2) {
     if (!str) {
         return NULL;
     }
-    snprintf(str, len, "%s/%s", s1, s2);
+    snprintf(str, len, "%s%c%s", s1, PATH_SEP, s2);
     return str;
 }
 

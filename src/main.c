@@ -8,6 +8,7 @@
 #include "todue/db.h"
 #include "todue/log.h"
 #include "todue/path.h"
+#include "todue/platform.h"
 #include "todue/util.h"
 
 int main(int argc, char **argv) {
@@ -22,7 +23,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    char db_path[PATH_SIZE];
+    char db_path[PATH_LIMIT];
     if (todue_state_path(db_path, sizeof(db_path), TODUE_DB_FILE)) {
         fputs("Failed to get home database path\n", stderr);
         return 2;

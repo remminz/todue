@@ -4,6 +4,13 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "todue/util.h"
+
+enum {
+    ISO_DATE_LEN = ARRAY_LEN("YYYY-MM-DD") - 1,
+    ISO_DATETIME_SIZE = ARRAY_LEN("YYYY-MM-DD HH:MM:SS")
+};
+
 typedef enum {
     SECOND = 1,
     MINUTE = SECOND * 60,

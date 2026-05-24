@@ -7,7 +7,6 @@
 
 #include "todue/log.h"
 #include "todue/platform.h"
-#include "todue/util.h"
 
 static int to_int(const char *s) {
     return (s[0] - '0') * 10 + (s[1] - '0');
@@ -129,7 +128,7 @@ char *relative_iso_datetime(char *buf, size_t size, char *relative) {
         todue_localtime(&now, &local_tm);
         strftime(buf, size, "%Y-%m-%d 23:59:59", &local_tm);
     } else if (strcmp("tomorrow", relative) == 0) {
-        now += 24 * 60 * 60;
+        now += DAY;
         todue_localtime(&now, &local_tm);
         strftime(buf, size, "%Y-%m-%d 23:59:59", &local_tm);
     } else {
