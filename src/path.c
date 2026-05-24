@@ -9,7 +9,7 @@
 #include "todue/util.h"
 
 static int ensure_dir(const char *dir) {
-    int error = todue_mkdir(dir);
+    int error = mkdir_p(dir);
     if (error && !dir_exists(dir)) {
         fprintf(stderr, "mkdir failed on %s: %s\n", dir, strerror(error));
         return -1;

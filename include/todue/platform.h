@@ -39,6 +39,7 @@ bool dir_exists(const char *path);
 char *dir_join(const char *s1, const char *s2);
 const char *getenv_nonempty(const char *name);
 int todue_mkdir(const char *path);
+int mkdir_p(const char *path);
 int todue_isatty_stdout(void);
 const char *todue_get_pager(void);
 struct tm *todue_localtime(const time_t *t, struct tm *result);

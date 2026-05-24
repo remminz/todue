@@ -56,6 +56,40 @@ int todue_mkdir(const char *path) {
     return 0;
 }
 
+int mkdir_p(const char *path) {
+    if (!path) {
+        return -1;
+    }
+
+    int error;
+    char temp[PATH_LIMIT];
+
+    if (strlen(path) >= ARRAY_LEN(temp)) {
+        return -1;
+    }
+    strcpy(temp, path);
+
+    for (char *p = temp + 1; *p; ++p) {
+        if (*p == PATH_SEP) {
+            *p = '\0';
+
+            error = todue_mkdir(temp);
+            if (error && error != EEXIST) {
+                return error;
+            }
+
+            *p = PATH_SEP;
+        }
+    }
+
+    error = todue_mkdir(temp);
+    if (error && error != EEXIST) {
+        return error;
+    }
+
+    return 0;
+}
+
 int todue_isatty_stdout(void) {
 #if defined(TODUE_WINDOWS)
     return _isatty(_fileno(stdout));
