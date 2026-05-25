@@ -10,7 +10,7 @@ To see a list of commands run `todue help`
 ```
 todue commands:
   help                                                 | Show this screen
-  load db_path                                         | Load an existing database or create a new one
+  load {db_path | --home}                              | Load an existing database or create a new one
   reload                                               | Reload the current database
   add <brief> [-n <notes>] [-d <due_date>]             | Add an item
   edit <id> [-b <brief>] [-n <notes>] [-d <due_date>]  | Edit one or more details of an item

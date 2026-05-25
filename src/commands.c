@@ -7,6 +7,7 @@
 #include "todue/datetime.h"
 #include "todue/db.h"
 #include "todue/log.h"
+#include "todue/path.h"
 #include "todue/platform.h"
 #include "todue/util.h"
 
@@ -59,7 +60,7 @@ static int cmd_help(sqlite3 **db, int argc, char **argv) {
     printf(
         "todue commands:\n"
         "  help                                                 | Show this screen\n"
-        "  load db_path                                         | Load an existing database or create a new one\n"
+        "  load {db_path | --home}                              | Load an existing database or create a new one\n"
         "  reload                                               | Reload the current database\n"
         "  add <brief> [-n notes] [-d due_date]                 | Add an item\n"
         "  edit <id> [-b <brief>] [-n <notes>] [-d <due_date>]  | Edit one or more details of an item\n"
@@ -81,7 +82,7 @@ static int cmd_load(sqlite3 **db, int argc, char **argv) {
         rc = -1;
     } else if (argc != 2) {
         LOG_WARN("load usage message triggered");
-        fprintf(stderr, "usage: todue load db_path\n");
+        fprintf(stderr, "usage: todue load {db_path | --home}\n");
         rc = -1;
     } else if (db_close(*db)) {
         fprintf(
@@ -90,6 +91,23 @@ static int cmd_load(sqlite3 **db, int argc, char **argv) {
             sqlite3_db_filename(*db, "main")
         );
         rc = -1;
+    } else if (!strcmp("--home", argv[1])) {
+        char db_path[PATH_LIMIT];
+        if (todue_state_path(db_path, sizeof(db_path), TODUE_DB_FILE)) {
+            fputs("Failed to get home database path\n", stderr);
+            rc = -1;
+        }
+        if (db_open(db, db_path)) {
+            fprintf(stderr, "Unable to open new db '%s'\n", db_path);
+            if (db_open(db, old_path)) {
+                LOG_ERROR("Failed to reopen old db");
+                fprintf(
+                    stderr,
+                    "Old db could not be reopened: try again or quit\n"
+                );
+            }
+            rc = -1;
+        }
     } else if (db_open(db, argv[1])) {
         fprintf(stderr, "Unable to open new db '%s'\n", argv[1]);
         if (db_open(db, old_path)) {
