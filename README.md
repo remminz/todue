@@ -17,6 +17,7 @@ todue commands:
   rm {id... | --done | --all}                          | Remove one or more items
   done {id... | --all}                                 | Mark one or more items as done
   ls                                                   | List all todues
+  config {list | create}                               | View config settings or create config file
   quit                                                 | Exit the CLI
 ```
 *Additional help on specific command arguments can be found by running the command without any arguments*
@@ -51,6 +52,15 @@ Install to `path/`: `make install BINDIR=path`
 Just removes the binary, leaves the app data
 
 `make uninstall` follows the same conventions as `make install`
+
+## Config
+Run `todue config list` to view the current config
+
+If no config file exists yet, these are the default values that the app sets
+
+To make a new config file with the defaults, run `todue config create`
+
+Any missing config fields will use defaults when running the app
 
 ## License
 This project is licensed under the [MIT License](./LICENSE).

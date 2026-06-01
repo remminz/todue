@@ -1,5 +1,6 @@
 #include "todue/config.h"
 
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -10,8 +11,12 @@
 
 Config g_config;
 
-static void set_defaults(void) {
-    g_config.log_count = 7;
+static void set_defaults(Config *conf) {
+    if (!conf) {
+        return;
+    }
+
+    conf->log_count = 7;
 }
 
 static int config_handler(void *user, const char *section,
@@ -36,7 +41,7 @@ static int config_handler(void *user, const char *section,
 }
 
 void config_init(void) {
-    set_defaults();
+    set_defaults(&g_config);
     config_read();
 }
 
@@ -60,4 +65,33 @@ void config_read(void) {
         default:
             fprintf(stderr, "Config error at line %d\n", rc);
     }
+}
+
+int config_create(void) {
+    char path[PATH_LIMIT];
+    if (todue_config_path(path, ARRAY_LEN(path), TODUE_CONF_FILE)) {
+        fprintf(stderr, "Unexpected error creating config\n");
+        return -1;
+    }
+
+    FILE *fp = fopen(path, "w");
+    if (!fp) {
+        fprintf(stderr, "Failed opening config file: %s\n", strerror(errno));
+        return -1;
+    }
+
+    Config config;
+    set_defaults(&config);
+    config_print(&config, fp);
+
+    return 0;
+}
+
+void config_print(Config *conf, FILE *out) {
+    if (!conf || !out) {
+        return;
+    }
+
+    fprintf(out, "log_count=%zu\n",
+            conf->log_count);
 }

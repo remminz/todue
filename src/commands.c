@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "todue/config.h"
 #include "todue/datetime.h"
 #include "todue/db.h"
 #include "todue/log.h"
@@ -67,6 +68,7 @@ static int cmd_help(sqlite3 **db, int argc, char **argv) {
         "  rm {id... | --done | --all}                          | Remove one or more items\n"
         "  done {id... | --all}                                 | Mark one or more items as done\n"
         "  ls                                                   | List all todues\n"
+        "  config {list | create}                               | View config settings or create config file\n"
         "  quit                                                 | Exit the CLI\n"
     );
     return 0;
@@ -460,6 +462,28 @@ static int cmd_list(sqlite3 **db, int argc, char **argv) {
     return 0;
 }
 
+static int cmd_config(sqlite3 **db, int argc, char **argv) {
+    (void)db;
+
+    if (argc == 1 || argc > 2) {
+        LOG_WARN("config usage message triggered");
+        fprintf(stderr, "usage: todue config {list | create}\n");
+        return -1;
+    }
+
+    if (!strcmp(argv[1], "list")) {
+        config_print(&g_config, stdout);
+    } else if (!strcmp(argv[1], "create")) {
+        config_create();
+    } else {
+        LOG_WARN("config usage message triggered");
+        fprintf(stderr, "usage: todue config {list | create}\n");
+        return -1;
+    }
+
+    return 0;
+}
+
 static const Command commands[] = {
 #ifdef DEBUG
     {"debug", cmd_debug},
@@ -472,6 +496,7 @@ static const Command commands[] = {
     {"rm", cmd_remove},
     {"done", cmd_done},
     {"ls", cmd_list},
+    {"config", cmd_config},
 };
 
 int execute_cmd(sqlite3 **db, int argc, char **argv) {
