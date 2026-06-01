@@ -33,14 +33,14 @@ int ensure_todue_dirs(void) {
     }
     free(dir);
 
-    // Not in use yet
-    /*
     dir = todue_config_dir();
     if (ensure_dir(dir)) {
         rc = -1;
     }
     free(dir);
 
+    // Not in use yet
+    /*
     dir = todue_cache_dir();
     if (ensure_dir(dir)) {
         rc = -1;

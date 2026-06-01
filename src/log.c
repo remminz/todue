@@ -5,6 +5,7 @@
 #include <string.h>
 #include <time.h>
 
+#include "todue/config.h"
 #include "todue/datetime.h"
 #include "todue/path.h"
 #include "todue/platform.h"
@@ -63,7 +64,7 @@ int log_init(LogLevel level) {
 
     char *dir = todue_state_dir();
     char *logs = dir_join(dir, TODUE_LOG_DIR);
-    rotate_logs(logs, LOG_ROTATION_COUNT);
+    rotate_logs(logs, g_config.log_count);
     free(dir);
     free(logs);
 

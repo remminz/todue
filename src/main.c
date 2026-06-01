@@ -4,6 +4,7 @@
 #include "sqlite/sqlite3.h"
 
 #include "todue/cli.h"
+#include "todue/config.h"
 #include "todue/datetime.h"
 #include "todue/db.h"
 #include "todue/log.h"
@@ -22,6 +23,8 @@ int main(int argc, char **argv) {
         fputs("Failed to ensure all app data directories\n", stderr);
         return 1;
     }
+
+    config_init();
 
     char db_path[PATH_LIMIT];
     if (todue_state_path(db_path, sizeof(db_path), TODUE_DB_FILE)) {

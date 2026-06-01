@@ -6,6 +6,7 @@
 #define TODUE_DB_FILE   "todue.db"
 #define TODUE_LOG_DIR   "logs"
 #define TODUE_HIST_FILE ".history"
+#define TODUE_CONF_FILE "config.ini"
 
 int ensure_todue_dirs(void);
 int todue_state_path(char *buf, size_t size, const char *name);

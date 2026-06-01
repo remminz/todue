@@ -62,6 +62,7 @@ endif
 SRC_C := \
     $(wildcard $(SRCDIR)/*.c) \
     $(TPDIR)/sqlite/sqlite3.c \
+    $(TPDIR)/inih/ini.c \
 	$(SRCDIR)/platform/common.c \
 	$(SRCDIR)/platform/$(PLATFORM).c
 
