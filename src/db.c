@@ -63,8 +63,7 @@ int db_init(sqlite3 *db) {
 }
 
 int db_add_todue(sqlite3 *db, const char *brief,
-                 const char *notes, const char *due)
-{
+                 const char *notes, const char *due) {
     sqlite3_stmt *stmt;
     sqlite3_prepare_v2(
         db,
@@ -101,8 +100,7 @@ int db_add_todue(sqlite3 *db, const char *brief,
 }
 
 int db_edit_todue(sqlite3 *db, int id, const char *brief,
-                  const char *notes, bool append_note, const char *due)
-{
+                  const char *notes, bool append_note, const char *due) {
     sqlite3_stmt *stmt;
     const char *sql;
     if (append_note && notes) {
@@ -269,14 +267,18 @@ int db_delete_all(sqlite3 *db) {
 }
 
 int db_list(sqlite3 *db, todue_callback callback, void *user_data) {
+    static const char sql[] =
+        "SELECT "
+            "id,"
+            "brief,"
+            "notes,"
+            "datetime(created, 'localtime') AS created,"
+            "due,"
+            "done "
+        "FROM todue;";
+
     sqlite3_stmt *stmt;
-    sqlite3_prepare_v2(
-        db,
-        "SELECT * FROM todue;",
-        -1,
-        &stmt,
-        NULL
-    );
+    sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
     int rc;
     while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
