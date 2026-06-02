@@ -139,14 +139,14 @@ void start_repl(sqlite3 **db) {
             free(input);
             continue;
         }
-        if (strcmp(input, "quit") == 0) {
+        if (!strcmp(input, "quit")) {
             free(input);
             break;
         }
 
         repl_add_history(input);
 
-        if (strcmp(input, "clear") == 0) {
+        if (!strcmp(input, "clear") || !strcmp(input, "cls")) {
             clear_screen(*db);
         } else {
             if (parse_cmd(input, &argc, &argv)) {
@@ -156,7 +156,7 @@ void start_repl(sqlite3 **db) {
             }
             execute_cmd(db, argc, argv);
 
-            if (strcmp(argv[0], "load") == 0) {
+            if (!strcmp(argv[0], "load")) {
                 clear_screen(*db);
             }
 

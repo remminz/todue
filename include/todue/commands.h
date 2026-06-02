@@ -4,7 +4,7 @@
 #include "sqlite/sqlite3.h"
 
 typedef struct {
-    const char *name;
+    const char *aliases[2];
     int (*func)(sqlite3 **db, int argc, char **argv);
 } Command;
 

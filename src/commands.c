@@ -486,17 +486,17 @@ static int cmd_config(sqlite3 **db, int argc, char **argv) {
 
 static const Command commands[] = {
 #ifdef DEBUG
-    {"debug", cmd_debug},
+    {{"debug", NULL}, cmd_debug},
 #endif
-    {"help", cmd_help},
-    {"load", cmd_load},
-    {"reload", cmd_reload},
-    {"add", cmd_add},
-    {"edit", cmd_edit},
-    {"rm", cmd_remove},
-    {"done", cmd_done},
-    {"ls", cmd_list},
-    {"config", cmd_config},
+    {{"help", "h"}, cmd_help},
+    {{"load", "l"}, cmd_load},
+    {{"reload", "re"}, cmd_reload},
+    {{"add", "a"}, cmd_add},
+    {{"edit", "e"}, cmd_edit},
+    {{"remove", "rm"}, cmd_remove},
+    {{"done", "d"}, cmd_done},
+    {{"list", "ls"}, cmd_list},
+    {{"config", "conf"}, cmd_config},
 };
 
 int execute_cmd(sqlite3 **db, int argc, char **argv) {
@@ -527,13 +527,18 @@ int execute_cmd(sqlite3 **db, int argc, char **argv) {
         strcat(cmd, "\"");
     }
 
-    for (size_t i = 0; i < ARRAY_LEN(commands); ++i) {
-        if (strcmp(argv[0], commands[i].name) == 0) {
-            LOG_DEBUG("Matched command '%s' from '%s'", argv[0], cmd);
-            if (commands[i].func(db, argc, argv)) {
-                LOG_ERROR("Non zero return code from '%s'", cmd);
+    for (uint8_t i = 0; i < ARRAY_LEN(commands); ++i) {
+        for (uint8_t j = 0; j < ARRAY_LEN(commands->aliases); ++j) {
+            if (commands[i].aliases[j] == NULL) {
+                break;
             }
-            goto cleanup;
+            if (!strcmp(argv[0], commands[i].aliases[j])) {
+                LOG_DEBUG("Matched command '%s' from '%s'", argv[0], cmd);
+                if (commands[i].func(db, argc, argv)) {
+                    LOG_ERROR("Non zero return code from '%s'", cmd);
+                }
+                goto cleanup;
+            }
         }
     }
 
