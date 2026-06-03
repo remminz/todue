@@ -6,6 +6,7 @@
 #include <string.h>
 #include <time.h>
 
+#include "todue/config.h"
 #include "todue/datetime.h"
 #include "todue/log.h"
 #include "todue/path.h"
@@ -13,23 +14,13 @@
 #include "todue/repl_input.h"
 #include "todue/util.h"
 
-static char *info_str(sqlite3 *db) {
-    char time_str[20];
+static void clear_screen(sqlite3 *db) {
+    char time_str[ISO_DATETIME_SIZE];
     current_iso_datetime(time_str, sizeof(time_str));
 
-    const char* path = sqlite3_db_filename(db, "main");
-    char *str = malloc(sizeof(char) * 256);
+    const char *path = (const char *)sqlite3_db_filename(db, "main");
 
-    snprintf(str, 256, "todue CLI %s (%s)", time_str, path);
-    return str;
-}
-
-static void clear_screen(sqlite3 *db) {
-    printf("\033[2J\033[H");
-    fflush(stdout);
-    char *info = info_str(db);
-    puts(info);
-    free(info);
+    printf("todue CLI %s (%s)\n", time_str, path);
 }
 
 static int parse_cmd(const char *line, int *argc, char ***argv) {
@@ -122,7 +113,18 @@ cleanup:
     return rc;
 }
 
+static void exit_alt_screen(void) {
+    printf("\033[?1049l");
+    fflush(stdout);
+}
+
 void start_repl(sqlite3 **db) {
+    if (g_config.use_alt_screen && todue_isatty_stdout()) {
+        printf("\033[?1049h");
+        fflush(stdout);
+        atexit(exit_alt_screen);
+    }
+
     char history_path[PATH_MAX];
     // no need for error checking; no history if failed
     todue_state_path(history_path, sizeof(history_path), TODUE_HIST_FILE);

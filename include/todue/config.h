@@ -1,11 +1,13 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 
 typedef struct {
     size_t log_count;
+    bool use_alt_screen;
 } Config;
 
 extern Config g_config;

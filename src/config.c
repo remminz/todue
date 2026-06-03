@@ -17,6 +17,7 @@ static void set_defaults(Config *conf) {
     }
 
     conf->log_count = 7;
+    conf->use_alt_screen = false;
 }
 
 static int config_handler(void *user, const char *section,
@@ -26,6 +27,13 @@ static int config_handler(void *user, const char *section,
     if (!strcmp(section, "")) {
         if (!strcmp(name, "log_count")) {
             g_config.log_count = atol(value);
+        } else if (!strcmp(name, "use_alt_screen")) {
+            if (strcmp(value, "true") && strcmp(value, "1") &&
+                strcmp(value, "false") && strcmp(value, "0")) {
+                return 0;
+            }
+            g_config.use_alt_screen = !strcmp(value, "true") ||
+                                      !strcmp(value, "1");
         } else {
             fprintf(stderr, "Unrecognized config option '%s' in '%s' section\n",
                     name, section);
@@ -94,4 +102,6 @@ void config_print(Config *conf, FILE *out) {
 
     fprintf(out, "log_count=%zu\n",
             conf->log_count);
+    fprintf(out, "use_alt_screen=%s\n",
+            conf->use_alt_screen ? "true" : "false");
 }
