@@ -9,6 +9,15 @@
 #include "todue/path.h"
 #include "todue/platform.h"
 
+#define INVALID_BOOL \
+    (strcmp(value, "true") && \
+     strcmp(value, "1") && \
+     strcmp(value, "false") && \
+     strcmp(value, "0"))
+#define STRING_TO_BOOL \
+    (!strcmp(value, "true") || \
+     !strcmp(value, "1"))
+
 Config g_config;
 
 static void set_defaults(Config *conf) {
@@ -18,6 +27,7 @@ static void set_defaults(Config *conf) {
 
     conf->log_count = 7;
     conf->use_alt_screen = false;
+    conf->use_pager = true;
 }
 
 static int config_handler(void *user, const char *section,
@@ -26,14 +36,21 @@ static int config_handler(void *user, const char *section,
 
     if (!strcmp(section, "")) {
         if (!strcmp(name, "log_count")) {
-            g_config.log_count = atol(value);
-        } else if (!strcmp(name, "use_alt_screen")) {
-            if (strcmp(value, "true") && strcmp(value, "1") &&
-                strcmp(value, "false") && strcmp(value, "0")) {
+            long val = atol(value);
+            if (val == 0) {
                 return 0;
             }
-            g_config.use_alt_screen = !strcmp(value, "true") ||
-                                      !strcmp(value, "1");
+            g_config.log_count = atol(value);
+        } else if (!strcmp(name, "use_alt_screen")) {
+            if (INVALID_BOOL) {
+                return 0;
+            }
+            g_config.use_alt_screen = STRING_TO_BOOL;
+        } else if (!strcmp(name, "use_pager")) {
+            if (INVALID_BOOL) {
+                return 0;
+            }
+            g_config.use_pager = STRING_TO_BOOL;
         } else {
             fprintf(stderr, "Unrecognized config option '%s' in '%s' section\n",
                     name, section);
@@ -104,4 +121,6 @@ void config_print(Config *conf, FILE *out) {
             conf->log_count);
     fprintf(out, "use_alt_screen=%s\n",
             conf->use_alt_screen ? "true" : "false");
+    fprintf(out, "use_pager=%s\n",
+            conf->use_pager ? "true" : "false");
 }

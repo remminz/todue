@@ -451,15 +451,16 @@ static int cmd_list(sqlite3 **db, int argc, char **argv) {
         return -1;
     }
 
-    FILE *out = openPager();
+    FILE *out = g_config.use_pager ? openPager() : stdout;
+    int rc = 0;
+
     if (db_list(*db, print_row, out)) {
         fprintf(stderr, "Failed to list items\n");
         check_table(*db);
-        closePager(out);
-        return -1;
+        rc = -1;
     }
     closePager(out);
-    return 0;
+    return rc;
 }
 
 static int cmd_config(sqlite3 **db, int argc, char **argv) {
@@ -474,7 +475,7 @@ static int cmd_config(sqlite3 **db, int argc, char **argv) {
     if (!strcmp(argv[1], "list")) {
         config_print(&g_config, stdout);
     } else if (!strcmp(argv[1], "create")) {
-        config_create();
+        return config_create();
     } else {
         LOG_WARN("config usage message triggered");
         fprintf(stderr, "usage: todue config {list | create}\n");

@@ -11,8 +11,6 @@
 #include "todue/platform.h"
 #include "todue/util.h"
 
-#define LOG_ROTATION_COUNT 7
-
 static LogLevel current_level = LOG_INFO;
 static FILE *log_fp = NULL;
 

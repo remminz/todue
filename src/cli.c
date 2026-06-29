@@ -20,6 +20,11 @@ static void clear_screen(sqlite3 *db) {
 
     const char *path = (const char *)sqlite3_db_filename(db, "main");
 
+    if (g_config.use_alt_screen) {
+        printf("\033[2J\033[H");
+        fflush(stdout);
+    }
+
     printf("todue CLI %s (%s)\n", time_str, path);
 }
 
@@ -141,7 +146,7 @@ void start_repl(sqlite3 **db) {
             free(input);
             continue;
         }
-        if (!strcmp(input, "quit")) {
+        if (!strcmp(input, "quit") || !strncmp(input, "q", 2)) {
             free(input);
             break;
         }

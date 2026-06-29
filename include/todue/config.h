@@ -8,6 +8,7 @@
 typedef struct {
     size_t log_count;
     bool use_alt_screen;
+    bool use_pager;
 } Config;
 
 extern Config g_config;
