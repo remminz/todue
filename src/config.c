@@ -9,14 +9,15 @@
 #include "todue/path.h"
 #include "todue/platform.h"
 
-#define INVALID_BOOL \
-    (strcmp(value, "true") && \
-     strcmp(value, "1") && \
-     strcmp(value, "false") && \
-     strcmp(value, "0"))
-#define STRING_TO_BOOL \
-    (!strcmp(value, "true") || \
-     !strcmp(value, "1"))
+#define INVALID_BOOL(s) \
+    (strcmp(s, "true") && \
+     strcmp(s, "1") && \
+     strcmp(s, "false") && \
+     strcmp(s, "0"))
+#define STRING_TO_BOOL(s) \
+    (!strcmp(s, "true") || \
+     !strcmp(s, "1"))
+#define BOOL_TO_STRING(x) ((x) ? "true" : "false")
 
 Config g_config;
 
@@ -25,6 +26,7 @@ static void set_defaults(Config *conf) {
         return;
     }
 
+    conf->create_on_load = true;
     conf->log_count = 7;
     conf->use_alt_screen = false;
     conf->use_pager = true;
@@ -35,22 +37,27 @@ static int config_handler(void *user, const char *section,
     (void)user;
 
     if (!strcmp(section, "")) {
-        if (!strcmp(name, "log_count")) {
+        if (!strcmp(name, "create_on_load")) {
+            if (INVALID_BOOL(value)) {
+                return 0;
+            }
+            g_config.create_on_load = STRING_TO_BOOL(value);
+        } else if (!strcmp(name, "log_count")) {
             long val = atol(value);
             if (val == 0) {
                 return 0;
             }
             g_config.log_count = atol(value);
         } else if (!strcmp(name, "use_alt_screen")) {
-            if (INVALID_BOOL) {
+            if (INVALID_BOOL(value)) {
                 return 0;
             }
-            g_config.use_alt_screen = STRING_TO_BOOL;
+            g_config.use_alt_screen = STRING_TO_BOOL(value);
         } else if (!strcmp(name, "use_pager")) {
-            if (INVALID_BOOL) {
+            if (INVALID_BOOL(value)) {
                 return 0;
             }
-            g_config.use_pager = STRING_TO_BOOL;
+            g_config.use_pager = STRING_TO_BOOL(value);
         } else {
             fprintf(stderr, "Unrecognized config option '%s' in '%s' section\n",
                     name, section);
@@ -117,10 +124,13 @@ void config_print(Config *conf, FILE *out) {
         return;
     }
 
-    fprintf(out, "log_count=%zu\n",
-            conf->log_count);
-    fprintf(out, "use_alt_screen=%s\n",
-            conf->use_alt_screen ? "true" : "false");
-    fprintf(out, "use_pager=%s\n",
-            conf->use_pager ? "true" : "false");
+    fprintf(out,
+            "create_on_load=%s\n"
+            "log_count=%zu\n"
+            "use_alt_screen=%s\n"
+            "use_pager=%s\n",
+            BOOL_TO_STRING(conf->create_on_load),
+            conf->log_count,
+            BOOL_TO_STRING(conf->use_alt_screen),
+            BOOL_TO_STRING(conf->use_pager));
 }

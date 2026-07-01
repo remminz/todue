@@ -161,10 +161,11 @@ void start_repl(sqlite3 **db) {
                 free(input);
                 continue;
             }
-            execute_cmd(db, argc, argv);
 
-            if (!strcmp(argv[0], "load")) {
-                clear_screen(*db);
+            if (!execute_cmd(db, argc, argv)) {
+                if (!strcmp(argv[0], "load") || !strncmp(argv[0], "l", 2)) {
+                    clear_screen(*db);
+                }
             }
 
             for (int i = 0; i < argc; ++i) {

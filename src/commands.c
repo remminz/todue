@@ -75,10 +75,36 @@ static int cmd_help(sqlite3 **db, int argc, char **argv) {
 }
 
 static int cmd_load(sqlite3 **db, int argc, char **argv) {
-    int rc = 0;
-    char *old_path = strdup(sqlite3_db_filename(*db, "main"));
+    if (argc != 2) {
+        LOG_WARN("load usage message triggered");
+        fprintf(stderr, "usage: todue load {db_path | --home}\n");
+        return -1;
+    }
 
-    if (old_path == NULL) {
+    if (!g_config.create_on_load && strcmp(argv[1], "--home")) {
+        FILE *file = fopen(argv[1], "r");
+
+        if (!file) {
+            fclose(file);
+            fprintf(
+                stderr,
+                "New db does not exist; not creating new due to config\n"
+            );
+            return 0;
+        }
+        fclose(file);
+    }
+
+    int rc = 0;
+    const char *db_filename = sqlite3_db_filename(*db, "main");
+    if (!db_filename || !*db_filename) {
+        LOG_ERROR("Failed to get old path; can't continue without fallback");
+        fprintf(stderr, "Encountered unexpected error\n");
+        rc = -1;
+    }
+    char *old_path = strdup(db_filename);
+
+    if (!old_path) {
         LOG_ERROR("Failed to save old path; can't continue without fallback");
         fprintf(stderr, "Encountered unexpected error\n");
         rc = -1;
@@ -98,15 +124,12 @@ static int cmd_load(sqlite3 **db, int argc, char **argv) {
         if (todue_state_path(db_path, sizeof(db_path), TODUE_DB_FILE)) {
             fputs("Failed to get home database path\n", stderr);
             rc = -1;
-        }
-        if (db_open(db, db_path)) {
+        } else if (db_open(db, db_path)) {
             fprintf(stderr, "Unable to open new db '%s'\n", db_path);
             if (db_open(db, old_path)) {
                 LOG_ERROR("Failed to reopen old db");
-                fprintf(
-                    stderr,
-                    "Old db could not be reopened: try again or quit\n"
-                );
+                fprintf(stderr,
+                        "Old db could not be reopened: try again or quit\n");
             }
             rc = -1;
         }
@@ -138,7 +161,7 @@ static int cmd_reload(sqlite3 **db, int argc, char **argv) {
         return -1;
     }
 
-     if (db == NULL) {
+    if (db == NULL) {
         LOG_ERROR("Cannot reload null database");
         fprintf(stderr, "No db is open to reload\n");
         return -1;

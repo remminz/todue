@@ -6,6 +6,7 @@
 #include <stdio.h>
 
 typedef struct {
+    bool create_on_load;
     size_t log_count;
     bool use_alt_screen;
     bool use_pager;
