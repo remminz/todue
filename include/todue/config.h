@@ -5,9 +5,12 @@
 #include <stddef.h>
 #include <stdio.h>
 
+#include "todue/log.h"
+
 typedef struct {
     bool create_on_load;
     size_t log_count;
+    LogLevel log_level;
     bool use_alt_screen;
     bool use_pager;
 } Config;

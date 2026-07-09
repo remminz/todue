@@ -28,10 +28,28 @@ static void set_defaults(Config *conf) {
 
     conf->create_on_load = true;
     conf->log_count = 7;
+    conf->log_level = LOG_WARN;
     conf->use_alt_screen = false;
     conf->use_pager = true;
 }
 
+static int parse_log_level(const char *value, LogLevel *level) {
+    if (!strcasecmp(value, "none")) {
+        *level = LOG_NONE;
+    } else if (!strcasecmp(value, "error")) {
+        *level = LOG_ERROR;
+    } else if (!strcasecmp(value, "warn") ||
+                !strcasecmp(value, "warning")) {
+        *level = LOG_WARN;
+    } else if (!strcasecmp(value, "info")) {
+        *level = LOG_INFO;
+    } else if (!strcasecmp(value, "debug")) {
+        *level = LOG_DEBUG;
+    } else {
+        return 0;
+    }
+    return 1;
+}
 static int config_handler(void *user, const char *section,
                           const char *name, const char *value) {
     (void)user;
@@ -51,6 +69,8 @@ int config_set(const char *section, const char *name, const char *value) {
                 return 0;
             }
             g_config.log_count = atol(value);
+        } else if (!strcmp(name, "log_level")) {
+            return parse_log_level(value, &g_config.log_level);
         } else if (!strcmp(name, "use_alt_screen")) {
             if (INVALID_BOOL(value)) {
                 return 0;
@@ -126,6 +146,17 @@ int config_write(Config *conf) {
     return 0;
 }
 
+static const char *log_level_to_string(LogLevel level) {
+    switch (level) {
+        case LOG_NONE:  return "none";
+        case LOG_ERROR: return "error";
+        case LOG_WARN:  return "warn";
+        case LOG_INFO:  return "info";
+        case LOG_DEBUG: return "debug";
+        default:        return "warn";
+    }
+}
+
 void config_print(Config *conf, FILE *out) {
     if (!conf || !out) {
         return;
@@ -134,10 +165,12 @@ void config_print(Config *conf, FILE *out) {
     fprintf(out,
             "create_on_load=%s\n"
             "log_count=%zu\n"
+            "log_level=%s\n"
             "use_alt_screen=%s\n"
             "use_pager=%s\n",
             BOOL_TO_STRING(conf->create_on_load),
             conf->log_count,
+            log_level_to_string(conf->log_level),
             BOOL_TO_STRING(conf->use_alt_screen),
             BOOL_TO_STRING(conf->use_pager));
 }

@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
         return 2;
     }
 
-    if (log_init(LOG_DEBUG)) {
+    if (log_init(g_config.log_level)) {
         LOG_WARN("Failed to open log file; defaulted to stderr");
     }
 
