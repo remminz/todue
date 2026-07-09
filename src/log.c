@@ -11,7 +11,7 @@
 #include "todue/platform.h"
 #include "todue/util.h"
 
-static LogLevel current_level = LOG_INFO;
+static LogLevel current_level = LOG_NONE;
 static FILE *log_fp = NULL;
 
 static char *resolve_log_name(void) {
@@ -56,15 +56,22 @@ int log_init(LogLevel level) {
 #else
     log_set_level(level);
 
-    char *log_path = resolve_log_path();
-    int rc = log_set_file(log_path);
-    free(log_path);
+    int rc = 0;
 
-    char *dir = todue_state_dir();
-    char *logs = dir_join(dir, TODUE_LOG_DIR);
-    rotate_logs(logs, g_config.log_count);
-    free(dir);
-    free(logs);
+    if (current_level != LOG_NONE) {
+        char *log_path = resolve_log_path();
+        rc = log_set_file(log_path);
+        free(log_path);
+
+        char *dir = todue_state_dir();
+        char *logs = dir_join(dir, TODUE_LOG_DIR);
+        int rotate_rc = rotate_logs(logs, g_config.log_count);
+        if (!rc) {
+            rc = rotate_rc;
+        }
+        free(dir);
+        free(logs);
+    }
 
     return rc;
 #endif
@@ -98,11 +105,11 @@ void log_close(void) {
 void log_msg(LogLevel level, const char *file,
              int line, const char *format, ...)
 {
-    if (level > current_level || level == LOG_NONE) {
+    if (level > current_level) {
         return;
     }
 
-    const char *level_names[] = {
+    static const char *const level_names[] = {
         "ERROR",
         "WARN",
         "INFO",
@@ -117,19 +124,17 @@ void log_msg(LogLevel level, const char *file,
         log_fp = stderr;
     }
 
-    fprintf(
-        log_fp,
-        "%04d-%02d-%02d %02d:%02d:%02d [%s] %s:%d: ",
-        timestamp.tm_year + 1900,
-        timestamp.tm_mon + 1,
-        timestamp.tm_mday,
-        timestamp.tm_hour,
-        timestamp.tm_min,
-        timestamp.tm_sec,
-        level_names[level],
-        file,
-        line
-    );
+    fprintf(log_fp,
+            "%04d-%02d-%02d %02d:%02d:%02d [%s] %s:%d: ",
+            timestamp.tm_year + 1900,
+            timestamp.tm_mon + 1,
+            timestamp.tm_mday,
+            timestamp.tm_hour,
+            timestamp.tm_min,
+            timestamp.tm_sec,
+            level_names[level],
+            file,
+            line);
 
     va_list args;
     va_start(args, format);
