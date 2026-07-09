@@ -14,9 +14,10 @@ typedef struct {
 
 extern Config g_config;
 
+int config_set(const char *section, const char *name, const char *value);
 void config_init(void);
 void config_read(void);
-int config_create(void);
+int config_write(Config *conf);
 void config_print(Config *conf, FILE *out);
 
 #endif // CONFIG_H

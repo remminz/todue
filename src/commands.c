@@ -1,6 +1,7 @@
 #include "todue/commands.h"
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -41,7 +42,7 @@ static int cmd_debug(sqlite3 **db, int argc, char **argv) {
     }
 
     LOG_DEBUG("debug command ran with argc=%d and argv=[%s]", argc, argstr);
-    fprintf(stdout, "debug command ran with argc=%d and argv=[%s]\n", argc, argstr);
+    printf("debug command ran with argc=%d and argv=[%s]\n", argc, argstr);
 
     free(argstr);
     return 0;
@@ -60,16 +61,16 @@ static int cmd_help(sqlite3 **db, int argc, char **argv) {
 
     printf(
         "todue commands:\n"
-        "  help                                                 | Show this screen\n"
-        "  load {db_path | --home}                              | Load an existing database or create a new one\n"
-        "  reload                                               | Reload the current database\n"
-        "  add <brief> [-n notes] [-d due_date]                 | Add an item\n"
-        "  edit <id> [-b <brief>] [-n <notes>] [-d <due_date>]  | Edit one or more details of an item\n"
-        "  rm {id... | --done | --all}                          | Remove one or more items\n"
-        "  done {id... | --all}                                 | Mark one or more items as done\n"
-        "  ls                                                   | List all todues\n"
-        "  config {list | create}                               | View config settings or create config file\n"
-        "  quit                                                 | Exit the CLI\n"
+        "  help                                                         | Show this screen\n"
+        "  load {db_path | --home}                                      | Load an existing database or create a new one\n"
+        "  reload                                                       | Reload the current database\n"
+        "  add <brief> [-n notes] [-d due_date]                         | Add an item\n"
+        "  edit <id> [-b <brief>] [-n <notes>] [-d <due_date>]          | Edit one or more details of an item\n"
+        "  rm {id... | --done | --all}                                  | Remove one or more items\n"
+        "  done {id... | --all}                                         | Mark one or more items as done\n"
+        "  ls                                                           | List all todues\n"
+        "  usage: todue config {list | create | set <setting> <value>}  | View, create, or edit config file\n"
+        "  quit                                                         | Exit the CLI\n"
     );
     return 0;
 }
@@ -85,7 +86,6 @@ static int cmd_load(sqlite3 **db, int argc, char **argv) {
         FILE *file = fopen(argv[1], "r");
 
         if (!file) {
-            fclose(file);
             fprintf(
                 stderr,
                 "New db does not exist; not creating new due to config\n"
@@ -489,19 +489,29 @@ static int cmd_list(sqlite3 **db, int argc, char **argv) {
 static int cmd_config(sqlite3 **db, int argc, char **argv) {
     (void)db;
 
-    if (argc == 1 || argc > 2) {
+    if (argc == 1 || argc > 4) {
         LOG_WARN("config usage message triggered");
-        fprintf(stderr, "usage: todue config {list | create}\n");
+        fprintf(stderr,
+                "usage: todue config {list | create | set <setting> <value>}\n"
+        );
         return -1;
     }
 
     if (!strcmp(argv[1], "list")) {
         config_print(&g_config, stdout);
     } else if (!strcmp(argv[1], "create")) {
-        return config_create();
+        return config_write(NULL);
+    } else if (!strcmp(argv[1], "set") && argc == 4) {
+        // sections not in use yet
+        if (!config_set("", argv[2], argv[3])) {
+            return 0;
+        }
+        return config_write(&g_config);
     } else {
         LOG_WARN("config usage message triggered");
-        fprintf(stderr, "usage: todue config {list | create}\n");
+        fprintf(stderr,
+                "usage: todue config {list | create | set <setting> <value>}\n"
+        );
         return -1;
     }
 

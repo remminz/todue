@@ -35,7 +35,10 @@ static void set_defaults(Config *conf) {
 static int config_handler(void *user, const char *section,
                           const char *name, const char *value) {
     (void)user;
+    return config_set(section, name, value);
+}
 
+int config_set(const char *section, const char *name, const char *value) {
     if (!strcmp(section, "")) {
         if (!strcmp(name, "create_on_load")) {
             if (INVALID_BOOL(value)) {
@@ -99,7 +102,7 @@ void config_read(void) {
     }
 }
 
-int config_create(void) {
+int config_write(Config *conf) {
     char path[PATH_LIMIT];
     if (todue_config_path(path, ARRAY_LEN(path), TODUE_CONF_FILE)) {
         fprintf(stderr, "Unexpected error creating config\n");
@@ -112,10 +115,14 @@ int config_create(void) {
         return -1;
     }
 
-    Config config;
-    set_defaults(&config);
-    config_print(&config, fp);
+    if (!conf) {
+        Config defaults;
+        set_defaults(&defaults);
+        conf = &defaults;
+    }
+    config_print(conf, fp);
 
+    fclose(fp);
     return 0;
 }
 
