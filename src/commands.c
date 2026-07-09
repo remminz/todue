@@ -504,7 +504,12 @@ static int cmd_config(sqlite3 **db, int argc, char **argv) {
     } else if (!strcmp(argv[1], "set") && argc == 4) {
         // sections not in use yet
         if (!config_set("", argv[2], argv[3])) {
-            return 0;
+            LOG_WARN("Failed to set '%s' to '%s'", argv[2], argv[3]);
+            fprintf(stderr,
+                     "Failed to set '%s' to '%s'; check syntax\n",
+                     argv[2], argv[3]
+            );
+            return -1;
         }
         return config_write(&g_config);
     } else {
