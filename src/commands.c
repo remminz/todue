@@ -121,10 +121,16 @@ static int cmd_load(sqlite3 **db, int argc, char **argv) {
         rc = -1;
     } else if (!strcmp("--home", argv[1])) {
         char db_path[PATH_LIMIT];
-        if (todue_state_path(db_path, sizeof(db_path), TODUE_DB_FILE)) {
+        if (project_exists()) {
+            snprintf(db_path, ARRAY_LEN(db_path), "%s%c%s",
+                 g_config.project_path, PATH_SEP, TODUE_DB_FILE);
+        } else if (todue_state_path(db_path,
+                                    ARRAY_LEN(db_path),
+                                    TODUE_DB_FILE)) {
             fputs("Failed to get home database path\n", stderr);
             rc = -1;
-        } else if (db_open(db, db_path)) {
+        }
+        if (!rc && db_open(db, db_path)) {
             fprintf(stderr, "Unable to open new db '%s'\n", db_path);
             if (db_open(db, old_path)) {
                 LOG_ERROR("Failed to reopen old db");

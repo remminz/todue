@@ -2,6 +2,7 @@
 #define PLATFORM_H
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <time.h>
 
 #include "todue/util.h"
@@ -19,6 +20,7 @@
     #define popen _popen
     #define pclose _pclose
     #define strdup _strdup
+    #define getcwd _getcwd
 #else
     #define PATH_SEP '/'
     #include <limits.h>
@@ -43,6 +45,7 @@ int mkdir_p(const char *path);
 int todue_isatty_stdout(void);
 const char *todue_get_pager(void);
 struct tm *todue_localtime(const time_t *t, struct tm *result);
+int find_todue_home(char *path, size_t size);
 
 // Platform
 char *todue_state_dir(void);

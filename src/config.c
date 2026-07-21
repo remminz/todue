@@ -29,6 +29,7 @@ static void set_defaults(Config *conf) {
     conf->create_on_load = true;
     conf->log_count = 7;
     conf->log_level = LOG_WARN;
+    find_todue_home(conf->project_path, ARRAY_LEN(conf->project_path));
     conf->use_alt_screen = false;
     conf->use_pager = true;
 }
@@ -102,7 +103,12 @@ void config_init(void) {
 
 void config_read(void) {
     char ini[PATH_LIMIT];
-    if (todue_config_path(ini, ARRAY_LEN(ini), TODUE_CONF_FILE)) {
+
+    if (project_exists()) {
+        if (todue_config_file(ini, ARRAY_LEN(ini))) {
+            return;
+        }
+    } else if (todue_config_path(ini, ARRAY_LEN(ini), TODUE_CONF_FILE)) {
         fprintf(stderr, "Unexpected error before reading config\n");
         return;
     }
@@ -124,7 +130,12 @@ void config_read(void) {
 
 int config_write(Config *conf) {
     char path[PATH_LIMIT];
-    if (todue_config_path(path, ARRAY_LEN(path), TODUE_CONF_FILE)) {
+
+    if (project_exists()) {
+        if (todue_config_file(path, ARRAY_LEN(path))) {
+            return -1;
+        }
+    } else if (todue_config_path(path, ARRAY_LEN(path), TODUE_CONF_FILE)) {
         fprintf(stderr, "Unexpected error creating config\n");
         return -1;
     }
@@ -138,9 +149,10 @@ int config_write(Config *conf) {
     if (!conf) {
         Config defaults;
         set_defaults(&defaults);
-        conf = &defaults;
+        config_print(&defaults, fp);
+    } else {
+        config_print(conf, fp);
     }
-    config_print(conf, fp);
 
     fclose(fp);
     return 0;
@@ -173,4 +185,8 @@ void config_print(Config *conf, FILE *out) {
             log_level_to_string(conf->log_level),
             BOOL_TO_STRING(conf->use_alt_screen),
             BOOL_TO_STRING(conf->use_pager));
+}
+
+bool project_exists(void) {
+    return g_config.project_path[0] != '\0';
 }

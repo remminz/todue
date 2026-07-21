@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "todue/config.h"
 #include "todue/platform.h"
 #include "todue/util.h"
 
@@ -25,7 +26,7 @@ int ensure_todue_dirs(void) {
     if (ensure_dir(dir)) {
         rc = -1;
     } else { // build subdirectories with this pattern
-        char *logs = strjoin(dir, "/" TODUE_LOG_DIR);
+        char *logs = dir_join(dir, TODUE_LOG_DIR);
         if (ensure_dir(logs)) {
             rc = -1;
         }
@@ -59,7 +60,7 @@ static int todue_data_path(char *(*dir_fn)(void), char *buf,
 
 #ifdef DEBUG
     (void)dir_fn;
-    int written = snprintf(buf, size, "%s/%s", APP_DOT_DIR, name);
+    int written = snprintf(buf, size, "%s%c%s", APP_DOT_DIR, PATH_SEP, name);
     if (written < 0 || (size_t)written >= size) {
         return -1;
     }
@@ -70,7 +71,7 @@ static int todue_data_path(char *(*dir_fn)(void), char *buf,
         return -1;
     }
 
-    int written = snprintf(buf, size, "%s/%s", base, name);
+    int written = snprintf(buf, size, "%s%c%s", base, PATH_SEP, name);
     free(base);
 
     if (written < 0 || (size_t)written >= size) {
@@ -90,4 +91,24 @@ int todue_config_path(char *buf, size_t size, const char *name) {
 
 int todue_cache_path(char *buf, size_t size, const char *name) {
     return todue_data_path(todue_cache_dir, buf, size, name);
+}
+
+int todue_db_file(char *buf, size_t size) {
+    if (project_exists()) {
+        size_t written =
+            snprintf(buf, size, "%s%c%s",
+                     g_config.project_path, PATH_SEP, TODUE_DB_FILE);
+        return (written < size ? 0 : -1);
+    }
+    return todue_state_path(buf, size, TODUE_DB_FILE);
+}
+
+int todue_config_file(char *buf, size_t size) {
+    if (project_exists()) {
+        size_t written =
+            snprintf(buf, size, "%s%c%s",
+                     g_config.project_path, PATH_SEP, TODUE_CONF_FILE);
+        return (written < size ? 0 : -1);
+    }
+    return todue_config_path(buf, size, TODUE_CONF_FILE);
 }

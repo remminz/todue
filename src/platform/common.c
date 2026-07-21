@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 
 #ifdef TODUE_WINDOWS
+    #include <ctype.h>
     #include <direct.h>
 #else
     #include <unistd.h>
@@ -125,4 +126,46 @@ struct tm *todue_localtime(const time_t *t, struct tm *result) {
 #else
     return localtime_r(t, result);
 #endif
+}
+
+int find_todue_home(char *path, size_t size) {
+    if (!path || size == 0) {
+        return -1;
+    }
+    path[0] = '\0';
+
+    // get current directory
+    char cwd[PATH_LIMIT];
+    if (!getcwd(cwd, ARRAY_LEN(cwd))) {
+        perror("error getting cwd");
+        return -1;
+    }
+
+    // walk up directories to search for dot dir
+    char project[ARRAY_LEN(cwd) + ARRAY_LEN(APP_DOT_DIR) + 1];
+    const char *const root = strchr(cwd, PATH_SEP);
+    char *sep = NULL;
+
+    while (sep != root) {
+        int project_rc = snprintf(project, ARRAY_LEN(project),
+                          "%s%c%s", cwd, PATH_SEP, APP_DOT_DIR);
+
+        if (project_rc < 0 || ARRAY_LEN(project) < (size_t)project_rc) {
+            return -1;
+        }
+
+        if (dir_exists(project)) {
+            int path_rc = snprintf(path, size, "%s", project);
+            if (path_rc < 0 || size < (size_t)path_rc) {
+                path[0] = '\0';
+                return -1;
+            }
+            return 0;
+        }
+
+        sep = strrchr(cwd, PATH_SEP);
+        *sep = '\0';
+    }
+
+    return 0;
 }

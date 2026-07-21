@@ -33,15 +33,15 @@ static char *build_path(const char *path) {
 }
 
 char *todue_state_dir(void) {
-    return build_path(".local/state/");
+    return build_path(".local/state");
 }
 
 char *todue_config_dir(void) {
-    return build_path(".config/");
+    return build_path(".config");
 }
 
 char *todue_cache_dir(void) {
-    return build_path(".cache/");
+    return build_path(".cache");
 }
 
 typedef struct {

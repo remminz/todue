@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
     config_init();
 
     char db_path[PATH_LIMIT];
-    if (todue_state_path(db_path, sizeof(db_path), TODUE_DB_FILE)) {
+    if (todue_db_file(db_path, sizeof(db_path))) {
         fputs("Failed to get home database path\n", stderr);
         return 2;
     }

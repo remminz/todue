@@ -12,5 +12,7 @@ int ensure_todue_dirs(void);
 int todue_state_path(char *buf, size_t size, const char *name);
 int todue_config_path(char *buf, size_t size, const char *name);
 int todue_cache_path(char *buf, size_t size, const char *name);
+int todue_db_file(char *buf, size_t size);
+int todue_config_file(char *buf, size_t size);
 
 #endif // PATH_H
