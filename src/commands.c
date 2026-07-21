@@ -59,18 +59,19 @@ static int cmd_help(sqlite3 **db, int argc, char **argv) {
         return -1;
     }
 
-    printf(
+    puts(
         "todue commands:\n"
-        "  help                                                         | Show this screen\n"
-        "  load {db_path | --home}                                      | Load an existing database or create a new one\n"
-        "  reload                                                       | Reload the current database\n"
-        "  add <brief> [-n notes] [-d due_date]                         | Add an item\n"
-        "  edit <id> [-b <brief>] [-n <notes>] [-d <due_date>]          | Edit one or more details of an item\n"
-        "  rm {id... | --done | --all}                                  | Remove one or more items\n"
-        "  done {id... | --all}                                         | Mark one or more items as done\n"
-        "  ls                                                           | List all todues\n"
-        "  usage: todue config {list | create | set <setting> <value>}  | View, create, or edit config file\n"
-        "  quit                                                         | Exit the CLI\n"
+        "  help                                                 | Show this screen\n"
+        "  load {db_path | --home}                              | Load an existing database or create a new one\n"
+        "  reload                                               | Reload the current database\n"
+        "  init                                                 | Initialize an empty todue project\n"
+        "  add <brief> [-n notes] [-d due_date]                 | Add an item\n"
+        "  edit <id> [-b <brief>] [-n <notes>] [-d <due_date>]  | Edit one or more details of an item\n"
+        "  rm {id... | --done | --all}                          | Remove one or more items\n"
+        "  done {id... | --all}                                 | Mark one or more items as done\n"
+        "  ls                                                   | List all todues\n"
+        "  config {list | create | set <setting> <value>}       | View, create, or edit config file\n"
+        "  quit                                                 | Exit the CLI"
     );
     return 0;
 }
@@ -192,6 +193,56 @@ static int cmd_reload(sqlite3 **db, int argc, char **argv) {
 
     free(path);
     return rc;
+}
+
+static int cmd_init(sqlite3 **db, int argc, char **argv) {
+    (void)argv;
+
+    if (argc != 1) {
+        LOG_WARN("init usage message triggered");
+        fputs("usage: todue init\n", stderr);
+        return -1;
+    }
+
+    if (dir_exists(APP_DOT_DIR)) {
+        fputs("todue project already initialized\n", stderr);
+        return -1;
+    }
+
+    int rc = 0;
+
+    if ((rc = todue_mkdir(APP_DOT_DIR))) {
+        LOG_ERROR("Failed creating project dir: %s", strerror(rc));
+        fputs("Failed creating project directory\n", stderr);
+        return rc;
+    }
+
+    // update project path in config and write default config there
+    config_find_project();
+    config_write(NULL);
+    config_init();
+
+    char path[PATH_LIMIT];
+    rc = snprintf(path, ARRAY_LEN(path),
+                  "%s%c%s", APP_DOT_DIR, PATH_SEP, TODUE_DB_FILE);
+
+    if (rc < 0 || ARRAY_LEN(path) < (size_t)rc) {
+        LOG_ERROR("Failed to write project db path into buffer with rc=%d", rc);
+        fputs("Unexpected error while getting project path\n", stderr);
+        return -1;
+    }
+
+    if ((rc = db_open(db, path))) {
+        LOG_ERROR("Failed to open new project db");
+        fputs("Failed to open project db\n", stderr);
+        return rc;
+    } else if ((rc = db_init(*db))) {
+        LOG_ERROR("Failed to init new project db");
+        fputs("Failed to initialize project db\n", stderr);
+        return rc;
+    }
+
+    return 0;
 }
 
 static int cmd_add(sqlite3 **db, int argc, char **argv) {
@@ -536,6 +587,7 @@ static const Command commands[] = {
     {{"help", "h"}, cmd_help},
     {{"load", "l"}, cmd_load},
     {{"reload", "re"}, cmd_reload},
+    {{"init", "i"}, cmd_init},
     {{"add", "a"}, cmd_add},
     {{"edit", "e"}, cmd_edit},
     {{"remove", "rm"}, cmd_remove},

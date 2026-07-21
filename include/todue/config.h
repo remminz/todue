@@ -24,6 +24,7 @@ void config_init(void);
 void config_read(void);
 int config_write(Config *conf);
 void config_print(Config *conf, FILE *out);
+void config_find_project(void);
 bool project_exists(void);
 
 #endif // CONFIG_H

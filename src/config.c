@@ -187,6 +187,10 @@ void config_print(Config *conf, FILE *out) {
             BOOL_TO_STRING(conf->use_pager));
 }
 
+void config_find_project(void) {
+    find_todue_home(g_config.project_path, ARRAY_LEN(g_config.project_path));
+}
+
 bool project_exists(void) {
     return g_config.project_path[0] != '\0';
 }

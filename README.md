@@ -12,12 +12,13 @@ todue commands:
   help                                                 | Show this screen
   load {db_path | --home}                              | Load an existing database or create a new one
   reload                                               | Reload the current database
-  add <brief> [-n <notes>] [-d <due_date>]             | Add an item
+  init                                                 | Initialize an empty todue project
+  add <brief> [-n notes] [-d due_date]                 | Add an item
   edit <id> [-b <brief>] [-n <notes>] [-d <due_date>]  | Edit one or more details of an item
   rm {id... | --done | --all}                          | Remove one or more items
   done {id... | --all}                                 | Mark one or more items as done
   ls                                                   | List all todues
-  config {list | create}                               | View config settings or create config file
+  config {list | create | set <setting> <value>}       | View, create, or edit config file
   quit                                                 | Exit the CLI
 ```
 *Additional help on specific command arguments can be found by running the command without any arguments*
@@ -45,7 +46,7 @@ Install to `path/bin/`: `make install PREFIX=path`
 Install to `path/`: `make install BINDIR=path`
 
 #### Optional installation tips
-- add "todue.db" to global .gitignore file for project todue lists
+- add ".todue/" to global .gitignore file for project todue lists
 - add "alias to=todue" to terminal configuration file for faster use
 
 ### Uninstalling
