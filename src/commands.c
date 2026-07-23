@@ -11,6 +11,7 @@
 #include "todue/log.h"
 #include "todue/path.h"
 #include "todue/platform.h"
+#include "todue/repl_input.h"
 #include "todue/util.h"
 
 #ifdef DEBUG
@@ -580,7 +581,7 @@ static int cmd_config(sqlite3 **db, int argc, char **argv) {
     return 0;
 }
 
-static const Command commands[] = {
+const Command commands[] = {
 #ifdef DEBUG
     {{"debug", NULL}, cmd_debug},
 #endif
@@ -595,6 +596,7 @@ static const Command commands[] = {
     {{"list", "ls"}, cmd_list},
     {{"config", "conf"}, cmd_config},
 };
+const size_t commands_len = ARRAY_LEN(commands);
 
 int execute_cmd(sqlite3 **db, int argc, char **argv) {
     if (argc == 0 || argv == NULL) {
